@@ -11,12 +11,14 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import android.support.v4.view.accessibility.AccessibilityEventCompat.setAction
 import android.content.Intent
+import de.ikas.iotrec.app.helper.NotificationHelper
 import de.ikas.iotrec.bluetooth.service.BluetoothScannerService
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var textMessage: TextView
+    private lateinit var notificationHelper: NotificationHelper
 
     val logger = Logger.getLogger(MainActivity::class.java.name)
 
@@ -45,13 +47,20 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_main)
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
         textMessage = findViewById(R.id.message)
         navView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener)
+        // set first tab as selected
+        navView.selectedItemId = R.id.navigation_things
+
+
+        //notificationHelper = NotificationHelper(applicationContext)
+        //notificationHelper.createNotificationChannels()
 
         val intent = Intent(this, BluetoothScannerService::class.java)
-        intent.setAction(BluetoothScannerService.ACTION_START_FOREGROUND_SERVICE)
+        intent.action = BluetoothScannerService.ACTION_START_FOREGROUND_SERVICE
         startService(intent)
     }
 

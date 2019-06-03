@@ -13,18 +13,31 @@ import android.util.Log
 import android.widget.Toast
 import android.os.RemoteException
 import org.altbeacon.beacon.*
+import android.content.Context.NOTIFICATION_SERVICE
+import android.support.v4.content.ContextCompat.getSystemService
+import android.app.NotificationManager
+import android.app.NotificationChannel
+import android.content.Context
+import android.os.Build
+import de.ikas.iotrec.recommendation.RecommendationActivity
+import org.altbeacon.beacon.powersave.BackgroundPowerSaver
+import org.altbeacon.beacon.startup.RegionBootstrap
+import org.altbeacon.beacon.BeaconManager
+import de.ikas.iotrec.bluetooth.helper.TimedBeaconSimulator
 
 
 class BluetoothScannerService : Service(), BeaconConsumer {
 
     private lateinit var beaconManager: BeaconManager
+    private var regionBootstrap: RegionBootstrap? = null
+    private var backgroundPowerSaver: BackgroundPowerSaver? = null
 
     companion object {
-        private val TAG_FOREGROUND_SERVICE = "FOREGROUND_SERVICE"
-        val ACTION_START_FOREGROUND_SERVICE = "ACTION_START_FOREGROUND_SERVICE"
-        val ACTION_STOP_FOREGROUND_SERVICE = "ACTION_STOP_FOREGROUND_SERVICE"
-        val ACTION_PAUSE = "ACTION_PAUSE"
-        val ACTION_PLAY = "ACTION_PLAY"
+        private const val TAG_FOREGROUND_SERVICE = "FOREGROUND_SERVICE"
+        const val ACTION_START_FOREGROUND_SERVICE = "ACTION_START_FOREGROUND_SERVICE"
+        const val ACTION_STOP_FOREGROUND_SERVICE = "ACTION_STOP_FOREGROUND_SERVICE"
+        //const val ACTION_PAUSE = "ACTION_PAUSE"
+        //const val ACTION_PLAY = "ACTION_PLAY"
     }
 
 
@@ -34,18 +47,17 @@ class BluetoothScannerService : Service(), BeaconConsumer {
 
     override fun onCreate() {
         super.onCreate()
-
         Log.d(TAG_FOREGROUND_SERVICE, "My foreground service onCreate().")
 
-        beaconManager = BeaconManager.getInstanceForApplication(this)
-        beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
-        beaconManager.bind(this)
+        val timedBeaconSimulator = TimedBeaconSimulator()
+        timedBeaconSimulator.createTimedSimulatedBeacons()
+        BeaconManager.setBeaconSimulator(timedBeaconSimulator)
+        //val timedBeaconSimulator = BeaconManager.getBeaconSimulator()
+        //timedBeaconSimulator.createTimedSimulatedBeacons()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-
-        beaconManager.unbind(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -61,8 +73,8 @@ class BluetoothScannerService : Service(), BeaconConsumer {
                     stopForegroundService()
                     Toast.makeText(applicationContext, "Foreground service is stopped.", Toast.LENGTH_LONG).show()
                 }
-                ACTION_PLAY -> Toast.makeText(applicationContext, "You click Play button.", Toast.LENGTH_LONG).show()
-                ACTION_PAUSE -> Toast.makeText(applicationContext, "You click Pause button.", Toast.LENGTH_LONG).show()
+                //ACTION_PLAY -> Toast.makeText(applicationContext, "You click Play button.", Toast.LENGTH_LONG).show()
+                //ACTION_PAUSE -> Toast.makeText(applicationContext, "You click Pause button.", Toast.LENGTH_LONG).show()
             }
         }
         return super.onStartCommand(intent, flags, startId)
@@ -72,12 +84,14 @@ class BluetoothScannerService : Service(), BeaconConsumer {
     private fun startForegroundService() {
         Log.d(TAG_FOREGROUND_SERVICE, "Start foreground service.")
 
+
+        /*
         // Create notification default intent.
         val intent = Intent()
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
 
         // Create notification builder.
-        val builder = NotificationCompat.Builder(this)
+        val builder = NotificationCompat.Builder(this, getString(R.string.notification_channel_id_service))
 
         // Make notification show big text.
         val bigTextStyle = NotificationCompat.BigTextStyle()
@@ -111,13 +125,67 @@ class BluetoothScannerService : Service(), BeaconConsumer {
 
         // Build the notification.
         val notification = builder.build()
+        */
+
+
+
+        beaconManager = BeaconManager.getInstanceForApplication(this)
+        beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
+
+        // build the persistent notification
+        val builder = NotificationCompat.Builder(this, getString(R.string.notification_channel_id_service))
+        builder.setSmallIcon(R.mipmap.ic_launcher)
+        builder.setContentTitle("Scanning for Beacons")
+        val intent = Intent(this, RecommendationActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        builder.setContentIntent(pendingIntent)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "My Notification Channel ID",
+                "My Notification Name", NotificationManager.IMPORTANCE_DEFAULT
+            )
+            channel.description = "My Notification Channel Description"
+            val notificationManager = getSystemService(
+                Context.NOTIFICATION_SERVICE
+            ) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+            builder.setChannelId(channel.id)
+        }
+        beaconManager.enableForegroundServiceScanning(builder.build(), 456)
+
+        // For the above foreground scanning service to be useful, you need to disable
+        // JobScheduler-based scans (used on Android 8+) and set a fast background scan
+        // cycle that would otherwise be disallowed by the operating system.
+        beaconManager.setEnableScheduledScanJobs(false)
+        beaconManager.backgroundBetweenScanPeriod = 0
+        beaconManager.backgroundScanPeriod = 1100
+
+        Log.d(TAG_FOREGROUND_SERVICE, "setting up background monitoring for beacons and power saving")
+
+        // wake up the app when a beacon is seen
+        //val region = Region("backgroundRegion", null, null, null)
+        //regionBootstrap = RegionBootstrap(this, region)
+
+        // simply constructing this class and holding a reference to it in your custom Application
+        // class will automatically cause the BeaconLibrary to save battery whenever the application
+        // is not visible.  This reduces bluetooth power usage by about 60%
+        backgroundPowerSaver = BackgroundPowerSaver(this);
+
+        beaconManager.bind(this)
 
         // Start foreground service.
-        startForeground(1, notification)
+        //startForeground(1, notification)
+
+
+
     }
 
     private fun stopForegroundService() {
         Log.d(TAG_FOREGROUND_SERVICE, "Stop foreground service.")
+
+        beaconManager.unbind(this)
 
         // Stop foreground service and remove the notification.
         stopForeground(true)
