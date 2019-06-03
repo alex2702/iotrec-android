@@ -1,4 +1,4 @@
-package de.ikas.iotrec.dummy
+package de.ikas.iotrec.bluetooth.dummy
 
 import java.util.ArrayList
 import java.util.HashMap
