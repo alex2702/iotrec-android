@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Iot Rec</string>
+    <string name="app_name">IoT Rec</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_things">Things</string>
     <string name="title_settings">Settings</string>
