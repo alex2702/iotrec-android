@@ -2,43 +2,44 @@ package de.ikas.iotrec.bluetooth.ui
 
 import android.content.Context
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import de.ikas.iotrec.R
 import de.ikas.iotrec.app.MainActivity
-
-import de.ikas.iotrec.bluetooth.dummy.DummyContent
-import de.ikas.iotrec.bluetooth.dummy.DummyContent.DummyItem
+import de.ikas.iotrec.database.model.Thing
 import java.util.logging.Level
 import java.util.logging.Logger
 
-/**
- * A fragment representing a list of Items.
- * Activities containing this fragment MUST implement the
- * [ThingListFragment.OnListFragmentInteractionListener] interface.
- */
 class ThingListFragment : Fragment() {
 
-    // TODO: Customize parameters
     private var columnCount = 1
-
-    private var listener: OnListFragmentInteractionListener? = null
+    private var listener: OnListFragmentInteractionListener? = null // double listener?
+    private lateinit var thingViewModel: ThingViewModel
 
     val logger = Logger.getLogger(MainActivity::class.java.name)
+    private val TAG = "ThingListFragment"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        thingViewModel = ViewModelProviders.of(this).get(ThingViewModel::class.java)
 
         logger.log(Level.INFO, "ThingListFragment: in onCreate")
 
         arguments?.let {
             columnCount = it.getInt(ARG_COLUMN_COUNT)
         }
+
+        Log.d(TAG, "column count is $ARG_COLUMN_COUNT")
     }
 
     override fun onCreateView(
@@ -51,18 +52,26 @@ class ThingListFragment : Fragment() {
         // Set the adapter
         if (view is RecyclerView) {
             logger.log(Level.INFO, "ThingListFragment: in if in onCreateView")
+
             with(view) {
                 layoutManager = when {
                     columnCount <= 1 -> LinearLayoutManager(context)
                     else -> GridLayoutManager(context, columnCount)
                 }
-                adapter = ThingRecyclerViewAdapter(DummyContent.ITEMS, listener)
+                adapter = ThingRecyclerViewAdapter(context,listener)     //, listener) // double listener?
+
+                thingViewModel.allThingsInRange.observe(viewLifecycleOwner, Observer { things ->
+                    // Update the cached copy of the things in the adapter.
+                    things?.let { (adapter as ThingRecyclerViewAdapter).setThings(it) }
+                })
             }
         }
+
         return view
     }
 
-    /* https://stackoverflow.com/a/37279212
+    /* https://stackoverflow.com/a/37279212 */
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         logger.log(Level.INFO, "ThingListFragment: in onAttach")
@@ -72,12 +81,32 @@ class ThingListFragment : Fragment() {
             throw RuntimeException(context.toString() + " must implement OnListFragmentInteractionListener")
         }
     }
-    */
+
+
 
     override fun onDetach() {
         super.onDetach()
-        listener = null
+        listener = null // double listener?
     }
+
+
+    /*
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == NEW_THING_ACTIVITY_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            data?.let {
+                val thing = Thing(it.getStringExtra(NewWordActivity.EXTRA_REPLY))
+                thingViewModel.insert(thing)
+            }
+        } else {
+            Toast.makeText(
+                context,
+                "not saved",
+                Toast.LENGTH_LONG).show()
+        }
+    }
+    */
 
     /**
      * This interface must be implemented by activities that contain this
@@ -90,12 +119,16 @@ class ThingListFragment : Fragment() {
      * [Communicating with Other Fragments](http://developer.android.com/training/basics/fragments/communicating.html)
      * for more information.
      */
-    interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
-        fun onListFragmentInteraction(item: DummyItem?)
+    interface OnListFragmentInteractionListener { // double listener?
+        fun onListFragmentInteraction(thing: Thing) {
+            Log.d("ThingListFragment", "a list item was clicked")
+        }
     }
 
+
     companion object {
+
+        const val NEW_THING_ACTIVITY_REQUEST_CODE = 1
 
         // TODO: Customize parameter argument names
         const val ARG_COLUMN_COUNT = "column-count"

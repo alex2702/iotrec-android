@@ -3,33 +3,170 @@ package de.ikas.iotrec.bluetooth.service
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import android.app.PendingIntent
-import de.ikas.iotrec.R
-import android.app.Notification
-import android.graphics.BitmapFactory
-import android.graphics.Bitmap
-import android.support.v4.app.NotificationCompat
 import android.util.Log
-import android.widget.Toast
 import android.os.RemoteException
+import de.ikas.iotrec.database.dao.ThingDao
+import de.ikas.iotrec.database.db.IotRecDatabase
+import de.ikas.iotrec.database.model.Thing
+import de.ikas.iotrec.database.repository.ThingRepository
+import de.ikas.iotrec.network.IotRecApiInit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.altbeacon.beacon.*
-import android.content.Context.NOTIFICATION_SERVICE
-import android.support.v4.content.ContextCompat.getSystemService
-import android.app.NotificationManager
-import android.app.NotificationChannel
-import android.content.Context
-import android.os.Build
-import de.ikas.iotrec.app.MainActivity
-import de.ikas.iotrec.recommendation.RecommendationActivity
-import org.altbeacon.beacon.powersave.BackgroundPowerSaver
-import org.altbeacon.beacon.startup.RegionBootstrap
 import org.altbeacon.beacon.BeaconManager
-import de.ikas.iotrec.bluetooth.helper.TimedBeaconSimulator
-import org.altbeacon.beacon.startup.BootstrapNotifier
+import org.altbeacon.beacon.Beacon
+import org.altbeacon.beacon.RangeNotifier
+import java.time.LocalDateTime
+import java.util.*
+
+class BluetoothScannerService() : Service(), BeaconConsumer {
+
+    private val TAG = "BluetoothScannerService"
+    private var beaconManager: BeaconManager? = null
+
+    private var iotRecApi = IotRecApiInit(this)
+    private lateinit var thingsDao: ThingDao
+    private lateinit var thingRepository: ThingRepository
+    private val serviceJob = Job()
+    private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
+
+    init {
+        val iotRecApi = IotRecApiInit(this)
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+
+        beaconManager = BeaconManager.getInstanceForApplication(this)
+
+        // iBeacon layout
+        beaconManager!!.beaconParsers.add(BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
+
+        beaconManager!!.foregroundScanPeriod = 5000
+        beaconManager!!.foregroundBetweenScanPeriod = 0
+        beaconManager!!.backgroundScanPeriod = 5000
+        beaconManager!!.backgroundBetweenScanPeriod = 0
+
+        beaconManager!!.bind(this)
+
+        thingsDao = IotRecDatabase.getDatabase(this, serviceScope).thingDao()
+        thingRepository = ThingRepository(thingsDao)
+    }
+
+    override fun onBind(p0: Intent?): IBinder? {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onBeaconServiceConnect() {
+        val region = Region("backgroundRegion", null, null, null)
+
+        beaconManager?.addRangeNotifier(object : RangeNotifier {
+            override fun didRangeBeaconsInRegion(beacons: Collection<Beacon>, region: Region) {
+
+                Log.d(TAG,"=================================================================")
+
+                val rangedBeacons: MutableList<Thing> = mutableListOf()
+
+                for (beacon in beacons) {
+                    Log.d(TAG,"distance: " + beacon.distance + " id:" + beacon.id1 + "/" + beacon.id2 + "/" + beacon.id3)
+                    //Log.d(TAG, beacon.toString())
+
+                    // create object for newly discovered thing
+                    val thing = Thing(
+                        beacon.id1.toString() + "-" + beacon.id2.toString() + "-" + beacon.id3.toString(),
+                        beacon.bluetoothName ?: "Bluetooth name not found",
+                        "",
+                        beacon.id1.toString(),
+                        beacon.id2.toInt(),
+                        beacon.id3.toInt(),
+                        beacon.bluetoothName,
+                        beacon.distance,
+                        beacon.beaconTypeCode,
+                        beacon.bluetoothAddress,
+                        beacon.rssi,
+                        beacon.txPower,
+                        true,
+                        Date(), // lastSeen
+                        Date(0) // lastQueried
+                        )
+
+                    rangedBeacons.add(thing)
+
+                    // insert object into database
+                    serviceScope.launch(Dispatchers.IO) {
+
+                        val thingInDatabase = thingRepository.getThing(thing.id)
+
+                        if (thingInDatabase != null) {
+                            //if beacon is known already, just update inRange status and connectivity details
+                            thingRepository.updateBluetoothData(thing)
+                        } else {
+                            //if beacon is new, insert entire object
+                            thingRepository.insert(thing)
+                        }
+
+                        // get network data for beacon
+                        // only query if never fetched or if last fetch is older than 10 minutes
+                        if(thingInDatabase == null || thingInDatabase.lastQueried.time < Date().time - 600000) {
+                            val result = iotRecApi.getThing(thing.id)
+
+                            // if successful, update database object
+                            if(result.isSuccessful) {
+                                val resultThing = result.body()
+
+                                Log.d(TAG, thing.toString())
+
+                                if (resultThing != null) {
+                                    thingRepository.updateBackendData(resultThing.id, resultThing.title, resultThing.description, Date())
+                                }
+
+                                Log.d(TAG, thingRepository.getThing(thing.id).toString())
+                            }
+                        }
+                    }
+                }
+
+                serviceScope.launch(Dispatchers.IO) {
+
+                    Log.d(TAG, "Beacons in Range (DB): " + thingRepository.getThingsInRangeList().size)
+
+                    // get all beacons with status "inRange=true" in database
+                    val databaseBeaconsInRange = thingRepository.getThingsInRangeList()
+
+                    // find the ones that are not part of current "beacons" set
+                    // TODO only filter out if beacon hasn't been seen for at least 5 seconds
+                    val beaconsNotInRangeAnymore = databaseBeaconsInRange.filterNot { rangedBeacons.any { x -> x.id == it.id } /* && (it.lastSeen < (now - 5 seconds))*/ }
+
+                    // set inRange to false for those identified
+                    for (beacon in beaconsNotInRangeAnymore) {
+                        beacon.inRange = false
+
+                        serviceScope.launch(Dispatchers.IO) {
+                            thingRepository.setThingInRange(beacon.id, false)
+                        }
+                    }
+
+                    Log.d(TAG, "Beacons in Range (DB): " + thingRepository.getThingsInRangeList().size)
+                }
+            }
+        })
+
+        try {
+            beaconManager?.startRangingBeaconsInRegion(region)
+        } catch (e: RemoteException) {
+            e.printStackTrace()
+        }
+    }
+}
 
 
 
 
+
+
+/*
 class BluetoothScannerService : Service(), /*BeaconConsumer, */BootstrapNotifier {
 
     private lateinit var beaconManager: BeaconManager
@@ -252,3 +389,4 @@ class BluetoothScannerService : Service(), /*BeaconConsumer, */BootstrapNotifier
         */
     }
 }
+*/

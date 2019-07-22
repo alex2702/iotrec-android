@@ -1,30 +1,33 @@
 package de.ikas.iotrec.app
 
-import android.Manifest
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.BottomNavigationView
-import android.support.v7.app.AppCompatActivity
 import android.widget.TextView
 import de.ikas.iotrec.R
 import de.ikas.iotrec.bluetooth.ui.ThingListFragment
 import java.util.logging.Logger
-import android.content.DialogInterface
-import android.content.pm.PackageManager
-import android.os.Build
-import android.support.v7.app.AlertDialog
 import android.util.Log
-import java.nio.file.Files.size
-import android.os.RemoteException
-import org.altbeacon.beacon.*
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import de.ikas.iotrec.account.ui.login.LoginActivity
+import de.ikas.iotrec.bluetooth.ui.ThingBottomSheetFragment
+import de.ikas.iotrec.bluetooth.ui.ThingListFragment.Companion.NEW_THING_ACTIVITY_REQUEST_CODE
+import de.ikas.iotrec.database.db.IotRecDatabase
+import de.ikas.iotrec.database.model.Thing
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 
 
-class MainActivity : AppCompatActivity(), BeaconConsumer {
+class MainActivity : AppCompatActivity(), ThingListFragment.OnListFragmentInteractionListener { // double listener? */ /*, BeaconConsumer*/ {
 
     private lateinit var textMessage: TextView
     //private lateinit var notificationHelper: NotificationHelper
     //private var backgroundPowerSaver: BackgroundPowerSaver? = null
     //private lateinit var application: IotRecApplication //Monitoring
-    private val beaconManager = BeaconManager.getInstanceForApplication(this) //Ranging
+    //private val beaconManager = BeaconManager.getInstanceForApplication(this) //Ranging
 
     private val TAG = "MainActivity"
     private val PERMISSION_REQUEST_COARSE_LOCATION = 1
@@ -49,6 +52,15 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
                 loadFragment(item.itemId)
                 return@OnNavigationItemSelectedListener true
             }
+            R.id.navigation_profile -> {
+                //textMessage.setText(R.string.title_settings)
+                //loadFragment(item.itemId)
+
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
+
+                return@OnNavigationItemSelectedListener true
+            }
         }
 
         false
@@ -56,7 +68,7 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        Log.d(TAG, "MainActivity – onCreate")
         setContentView(R.layout.activity_main)
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
         textMessage = findViewById(R.id.message)
@@ -73,7 +85,8 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
         //intent.action = BluetoothScannerService.ACTION_START_FOREGROUND_SERVICE
         //startService(intent)
 
-        /* Monitoring
+        // Monitoring
+        /*
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // Android M Permission check
             if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -92,24 +105,35 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
         }
         */
 
+
         //probably not needed because onResume is called after onCreate anyway
         //val application = this.applicationContext as IotRecApplication
         //application.enableMonitoring()
+
+        /*
+        val application = this.applicationContext as IotRecApplication
+        if (BeaconManager.getInstanceForApplication(this).monitoredRegions.size > 0) {
+            application.disableMonitoring()
+        } else {
+            application.enableMonitoring()
+        }
+        */
     }
 
     override fun onPause() {
         super.onPause()
         //backgroundPowerSaver = BackgroundPowerSaver(this)
         //(this.applicationContext as IotRecApplication).setMonitoringActivity(null)    //Monitoring
-        beaconManager.unbind(this) //Ranging
+        //beaconManager.unbind(this) //Ranging
     }
 
     override fun onResume() {
         super.onResume()
+        Log.d(TAG, "MainActivity – onResume")
         //backgroundPowerSaver = null
         //val application = this.applicationContext as IotRecApplication    //Monitoring
         //application.setMonitoringActivity(this)   //Monitoring
-        beaconManager.bind(this) //Ranging
+        //beaconManager.bind(this) //Ranging
     }
 
     private fun loadFragment(itemId: Int) {
@@ -138,7 +162,8 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
         }
     }
 
-    /* Monitoring
+    // Monitoring
+    /*
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>, grantResults: IntArray
@@ -161,7 +186,9 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
     }
     */
 
+
     //Ranging
+    /*
     override fun onBeaconServiceConnect() {
         val rangeNotifier = object : RangeNotifier {
             override fun didRangeBeaconsInRegion(beacons: Collection<Beacon>, region: Region) {
@@ -176,11 +203,32 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
         try {
             beaconManager.startRangingBeaconsInRegion(Region("myRangingUniqueId", null, null, null))
             beaconManager.addRangeNotifier(rangeNotifier)
-            beaconManager.startRangingBeaconsInRegion(Region("myRangingUniqueId", null, null, null))
-            beaconManager.addRangeNotifier(rangeNotifier)
         } catch (e: RemoteException) {
             Log.e(TAG, "Not bound to beacon scanning service")
         }
 
     }
+    */
+
+    override fun onListFragmentInteraction(thing: Thing) {
+        Log.d(TAG, "a list item was clicked")
+
+        val bottomSheetFragment = ThingBottomSheetFragment.newInstance(thing)
+        bottomSheetFragment.show(supportFragmentManager, bottomSheetFragment.tag)
+
+        /*
+        val bottomSheetFragment = ThingBottomSheetFragment.newInstance(thing)
+        bottomSheetFragment.show(supportFragmentManager, bottomSheetFragment.tag)
+
+        val detailsFragment = RageComicDetailsFragment.newInstance(comic)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.root_layout, detailsFragment, "rageComicDetails")
+            .addToBackStack(null)
+            .commit()
+
+        view.context.getSupportFragmentManager()
+        Fragment myFragment = new MyFragment();
+        activity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, myFragment).addToBackStack(null).commit()
+        */
+    } // double listener?
 }

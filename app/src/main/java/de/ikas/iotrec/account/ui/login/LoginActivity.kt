@@ -1,11 +1,8 @@
 package de.ikas.iotrec.account.ui.login
 
 import android.app.Activity
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
+import android.content.Context
 import android.os.Bundle
-import android.support.annotation.StringRes
-import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -14,8 +11,15 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 
 import de.ikas.iotrec.R
+import android.R.id.edit
+import android.preference.PreferenceManager
+
 
 class LoginActivity : AppCompatActivity() {
 
@@ -31,7 +35,7 @@ class LoginActivity : AppCompatActivity() {
         val login = findViewById<Button>(R.id.login)
         val loading = findViewById<ProgressBar>(R.id.loading)
 
-        loginViewModel = ViewModelProviders.of(this, LoginViewModelFactory())
+        loginViewModel = ViewModelProviders.of(this, LoginViewModelFactory(this))
             .get(LoginViewModel::class.java)
 
         loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
@@ -57,6 +61,10 @@ class LoginActivity : AppCompatActivity() {
             }
             if (loginResult.success != null) {
                 updateUiWithUser(loginResult.success)
+                val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
+                val editor = sharedPrefs.edit()
+                editor.putString("jsonWebToken", loginResult.success.token)
+                editor.apply()
             }
             setResult(Activity.RESULT_OK)
 

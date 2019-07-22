@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.os.Build
-import android.support.v4.content.ContextCompat.getSystemService
 import de.ikas.iotrec.R
 
 class NotificationHelper constructor(context: Context) {

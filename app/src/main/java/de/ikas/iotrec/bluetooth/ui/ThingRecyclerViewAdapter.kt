@@ -1,39 +1,72 @@
 package de.ikas.iotrec.bluetooth.ui
 
-import android.support.v7.widget.RecyclerView
+import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.RecyclerView
 import de.ikas.iotrec.R
+import de.ikas.iotrec.database.model.Thing
 
 
-import de.ikas.iotrec.bluetooth.ui.ThingListFragment.OnListFragmentInteractionListener
-import de.ikas.iotrec.bluetooth.dummy.DummyContent.DummyItem
+class ThingRecyclerViewAdapter internal constructor(
+    context: Context,
+    //private val mValues: List<DummyItem>,
+    private val mListener: ThingListFragment.OnListFragmentInteractionListener? // double listener?
+) : RecyclerView.Adapter<ThingRecyclerViewAdapter.ThingViewHolder>() {
 
-import kotlinx.android.synthetic.main.fragment_thing_list_item.view.*
 
-/**
- * [RecyclerView.Adapter] that can display a [DummyItem] and makes a call to the
- * specified [OnListFragmentInteractionListener].
- * TODO: Replace the implementation with code for your data type.
- */
-class ThingRecyclerViewAdapter(
-    private val mValues: List<DummyItem>,
-    private val mListener: OnListFragmentInteractionListener?
-) : RecyclerView.Adapter<ThingRecyclerViewAdapter.ViewHolder>() {
+    private val mOnClickListener: View.OnClickListener = View.OnClickListener { view ->
+        Log.d(TAG, "a list item was clicked")
+        val item = view.tag as Thing
+        mListener?.onListFragmentInteraction(item)    // double listener?
 
-    private val mOnClickListener: View.OnClickListener
 
-    init {
-        mOnClickListener = View.OnClickListener { v ->
-            val item = v.tag as DummyItem
-            // Notify the active callbacks interface (the activity, if the fragment is attached to
-            // one) that an item has been selected.
-            mListener?.onListFragmentInteraction(item)
+    }
+
+
+    private val TAG = "ThingRecyclerViewAdapte"
+
+    private val inflater: LayoutInflater = LayoutInflater.from(context)
+    private var things = emptyList<Thing>() // Cached copy of words
+
+    inner class ThingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val thingItemView: TextView = itemView.findViewById(R.id.content)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ThingViewHolder {
+        Log.d(TAG, "onCreateViewHolder")
+        val itemView = inflater.inflate(R.layout.fragment_thing_list_item, parent, false)
+        return ThingViewHolder(itemView)
+    }
+
+    override fun onBindViewHolder(holder: ThingViewHolder, position: Int) {
+        val currentThing = things[position]
+
+        holder.thingItemView.text = currentThing.title
+        //TODO add more elements
+
+        with(holder.itemView) {
+            tag = currentThing
+            setOnClickListener(mOnClickListener)
         }
     }
 
+    internal fun setThings(things: List<Thing>) {
+        this.things = things
+        notifyDataSetChanged()
+    }
+
+    override fun getItemCount(): Int {
+        return things.size
+    }
+
+    /* old from dummy
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.fragment_thing_list_item, parent, false)
@@ -61,4 +94,5 @@ class ThingRecyclerViewAdapter(
             return super.toString() + " '" + mContentView.text + "'"
         }
     }
+    */
 }
