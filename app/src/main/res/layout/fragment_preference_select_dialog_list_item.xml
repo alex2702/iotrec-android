@@ -2,19 +2,22 @@
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
         android:background="?android:attr/selectableItemBackground"
-        android:clickable="false"
-        android:focusable="false">
+        android:clickable="true"
+        android:focusable="false"
+        android:padding="16dp">
 
     <TextView
             android:id="@+id/content"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/text_margin"
+            android:layout_height="match_parent"
+            android:layout_margin="0dp"
             android:textAppearance="?attr/textAppearanceListItem"
-            tools:text="This is the content"/>
+            tools:text="Item"
+            android:fontFamily="sans-serif-light"
+            android:gravity="center" />
 
 </LinearLayout>

@@ -1,6 +1,7 @@
 package de.ikas.iotrec.bluetooth.ui
 
 import android.content.Context
+import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import de.ikas.iotrec.R
 import de.ikas.iotrec.database.model.Thing
-
+import java.util.*
 
 class ThingRecyclerViewAdapter internal constructor(
     context: Context,
@@ -24,16 +25,14 @@ class ThingRecyclerViewAdapter internal constructor(
     private val mOnClickListener: View.OnClickListener = View.OnClickListener { view ->
         Log.d(TAG, "a list item was clicked")
         val item = view.tag as Thing
-        mListener?.onListFragmentInteraction(item)    // double listener?
-
-
+        mListener?.onThingListFragmentInteraction(item)    // double listener?
     }
 
 
     private val TAG = "ThingRecyclerViewAdapte"
 
     private val inflater: LayoutInflater = LayoutInflater.from(context)
-    private var things = emptyList<Thing>() // Cached copy of words
+    private var things = emptyList<Thing>() // Cached copy of things
 
     inner class ThingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val thingItemView: TextView = itemView.findViewById(R.id.content)
@@ -50,6 +49,12 @@ class ThingRecyclerViewAdapter internal constructor(
 
         holder.thingItemView.text = currentThing.title
         //TODO add more elements
+
+        if(currentThing.lastQueried.equals(Date(0))) {
+            holder.thingItemView.setTextColor(Color.GRAY)
+        } else {
+            holder.thingItemView.setTextColor(Color.BLACK)
+        }
 
         with(holder.itemView) {
             tag = currentThing

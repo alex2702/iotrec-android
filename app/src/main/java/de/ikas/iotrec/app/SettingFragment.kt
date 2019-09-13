@@ -2,6 +2,7 @@ package de.ikas.iotrec.app
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,9 +22,8 @@ import de.ikas.iotrec.app.dummy.DummyContent.DummyItem
  */
 class SettingFragment : Fragment() {
 
-    // TODO: Customize parameters
     private var columnCount = 1
-
+    private val TAG = "SettingFragment"
     private var listener: OnListFragmentInteractionListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,10 +35,13 @@ class SettingFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_setting_list, container, false)
+
+        Log.d(TAG, view.toString())
 
         // Set the adapter
         if (view is RecyclerView) {

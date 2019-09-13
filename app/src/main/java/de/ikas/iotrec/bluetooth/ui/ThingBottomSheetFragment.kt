@@ -40,6 +40,9 @@ class ThingBottomSheetFragment : BottomSheetDialogFragment() {
         val textViewTitle: TextView = view.findViewById(R.id.thing_title)
         textViewTitle.text = thing.title
 
+        val textViewDescription: TextView = view.findViewById(R.id.thing_description)
+        textViewDescription.text = thing.description
+
         return view
     }
 

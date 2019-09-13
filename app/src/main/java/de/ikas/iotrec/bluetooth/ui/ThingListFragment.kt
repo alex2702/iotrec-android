@@ -58,7 +58,7 @@ class ThingListFragment : Fragment() {
                     columnCount <= 1 -> LinearLayoutManager(context)
                     else -> GridLayoutManager(context, columnCount)
                 }
-                adapter = ThingRecyclerViewAdapter(context,listener)     //, listener) // double listener?
+                adapter = ThingRecyclerViewAdapter(context, listener)     //, listener) // double listener?
 
                 thingViewModel.allThingsInRange.observe(viewLifecycleOwner, Observer { things ->
                     // Update the cached copy of the things in the adapter.
@@ -120,7 +120,7 @@ class ThingListFragment : Fragment() {
      * for more information.
      */
     interface OnListFragmentInteractionListener { // double listener?
-        fun onListFragmentInteraction(thing: Thing) {
+        fun onThingListFragmentInteraction(thing: Thing) {
             Log.d("ThingListFragment", "a list item was clicked")
         }
     }

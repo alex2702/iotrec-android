@@ -1,7 +1,8 @@
-package de.ikas.iotrec.account.ui.login
+package de.ikas.iotrec.account.ui
 
 import android.app.Activity
 import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -17,23 +18,31 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 
 import de.ikas.iotrec.R
-import android.R.id.edit
 import android.preference.PreferenceManager
+import android.util.Log
+import android.view.inputmethod.InputMethodManager
+import de.ikas.iotrec.app.IotRecApplication
+import de.ikas.iotrec.extensions.hideKeyboard
 
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : AppCompatActivity(), SignupFragment.OnFragmentInteractionListener {
+
+    //var app = application as IotRecApplication
 
     private lateinit var loginViewModel: LoginViewModel
+
+    private val TAG = "LoginActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_login)
 
-        val username = findViewById<EditText>(R.id.username)
-        val password = findViewById<EditText>(R.id.password)
-        val login = findViewById<Button>(R.id.login)
-        val loading = findViewById<ProgressBar>(R.id.loading)
+        val usernameField = findViewById<EditText>(R.id.username)
+        val passwordField = findViewById<EditText>(R.id.password)
+        val loginButton = findViewById<Button>(R.id.login)
+        val goToSignupButton = findViewById<Button>(R.id.go_to_signup)
+        val loadingSpinner = findViewById<ProgressBar>(R.id.loading)
 
         loginViewModel = ViewModelProviders.of(this, LoginViewModelFactory(this))
             .get(LoginViewModel::class.java)
@@ -42,29 +51,34 @@ class LoginActivity : AppCompatActivity() {
             val loginState = it ?: return@Observer
 
             // disable login button unless both username / password is valid
-            login.isEnabled = loginState.isDataValid
+            loginButton.isEnabled = loginState.isDataValid
 
             if (loginState.usernameError != null) {
-                username.error = getString(loginState.usernameError)
+                usernameField.error = getString(loginState.usernameError)
             }
             if (loginState.passwordError != null) {
-                password.error = getString(loginState.passwordError)
+                passwordField.error = getString(loginState.passwordError)
             }
         })
 
         loginViewModel.loginResult.observe(this@LoginActivity, Observer {
             val loginResult = it ?: return@Observer
 
-            loading.visibility = View.GONE
+            loadingSpinner.visibility = View.GONE
             if (loginResult.error != null) {
                 showLoginFailed(loginResult.error)
             }
             if (loginResult.success != null) {
+                // show success message and profile tab
                 updateUiWithUser(loginResult.success)
-                val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
-                val editor = sharedPrefs.edit()
-                editor.putString("jsonWebToken", loginResult.success.token)
-                editor.apply()
+
+                // store user information in shared preferences
+                //val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
+                //val editor = sharedPrefs.edit()
+                //editor.putString("user.username", loginResult.success.username)
+                //editor.putString("user.email", loginResult.success.email)
+                //editor.putString("user.token", loginResult.success.token)
+                //editor.apply()
             }
             setResult(Activity.RESULT_OK)
 
@@ -72,18 +86,19 @@ class LoginActivity : AppCompatActivity() {
             finish()
         })
 
-        username.afterTextChanged {
+
+        usernameField.afterTextChanged {
             loginViewModel.loginDataChanged(
-                username.text.toString(),
-                password.text.toString()
+                usernameField.text.toString(),
+                passwordField.text.toString()
             )
         }
 
-        password.apply {
+        passwordField.apply {
             afterTextChanged {
                 loginViewModel.loginDataChanged(
-                    username.text.toString(),
-                    password.text.toString()
+                    usernameField.text.toString(),
+                    passwordField.text.toString()
                 )
             }
 
@@ -91,27 +106,51 @@ class LoginActivity : AppCompatActivity() {
                 when (actionId) {
                     EditorInfo.IME_ACTION_DONE ->
                         loginViewModel.login(
-                            username.text.toString(),
-                            password.text.toString()
+                            usernameField.text.toString(),
+                            passwordField.text.toString()
                         )
                 }
                 false
             }
 
-            login.setOnClickListener {
-                loading.visibility = View.VISIBLE
-                loginViewModel.login(username.text.toString(), password.text.toString())
+            loginButton.setOnClickListener {
+                loadingSpinner.visibility = View.VISIBLE
+                loginViewModel.login(usernameField.text.toString(), passwordField.text.toString())
             }
+        }
+
+        loginButton.setOnClickListener {
+            // hide keyboard
+            hideKeyboard(if (currentFocus == null) View(this) else currentFocus)
+            // show loading spinner
+            loadingSpinner.visibility = View.VISIBLE
+            loginViewModel.login(usernameField.text.toString(), passwordField.text.toString())
+        }
+
+
+        goToSignupButton.setOnClickListener {
+            setTitle(R.string.title_signup)
+            val signupFragment = SignupFragment()
+            supportFragmentManager
+                .beginTransaction()
+                .replace(R.id.container, signupFragment)
+                .addToBackStack(null)   //TODO do I want this?
+                .commit()
+            //TODO transmit data that has already been entered into the login form?
         }
     }
 
     private fun updateUiWithUser(model: LoggedInUserView) {
         val welcome = getString(R.string.welcome)
-        val displayName = model.displayName
+        val username = model.username
+
+        //val preferences = model.preferences
+        //Log.d(TAG, preferences.toString())
+
         // TODO : initiate successful logged in experience
         Toast.makeText(
             applicationContext,
-            "$welcome $displayName",
+            "$welcome $username",
             Toast.LENGTH_LONG
         ).show()
     }
@@ -119,6 +158,8 @@ class LoginActivity : AppCompatActivity() {
     private fun showLoginFailed(@StringRes errorString: Int) {
         Toast.makeText(applicationContext, errorString, Toast.LENGTH_SHORT).show()
     }
+
+    override fun onFragmentInteraction(uri: Uri) { }
 }
 
 /**

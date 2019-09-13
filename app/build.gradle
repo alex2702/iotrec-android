@@ -27,7 +27,7 @@ androidExtensions {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
@@ -40,7 +40,11 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation 'org.altbeacon:android-beacon-library:2.16.2'
+
+    //implementation 'org.altbeacon:android-beacon-library:2.16.2'
+    implementation 'org.altbeacon:android-beacon-library:2.16.3-beta4@aar'
+    //compile(name: 'org.altbeacon:android-beacon-library', ext: 'aar')
+
     implementation 'com.squareup.okhttp3:okhttp:4.0.1'
     implementation 'com.squareup.retrofit2:retrofit:2.6.0'
     implementation 'com.squareup.moshi:moshi:1.8.0'
@@ -56,5 +60,9 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-viewmodel-savedstate:1.0.0-alpha02'
     kapt 'androidx.lifecycle:lifecycle-compiler:2.1.0-beta01'
     implementation 'com.squareup.moshi:moshi-adapters:1.8.0'
+    implementation("com.squareup.moshi:moshi-kotlin:1.8.0")
+
+    //implementation "org.permissionsdispatcher:permissionsdispatcher:4.5.0"
+    //kapt "org.permissionsdispatcher:permissionsdispatcher-processor:4.5.0"
 
 }

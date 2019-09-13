@@ -14,22 +14,23 @@
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
-            android:theme="@style/AppTheme" tools:ignore="GoogleAppIndexingWarning">
+            android:theme="@style/AppTheme"
+            tools:ignore="GoogleAppIndexingWarning"
+            android:usesCleartextTraffic="true">
 
         <activity
                 android:name=".app.MainActivity"
-                android:label="@string/title_activity_main">
+                android:label="@string/app_name">
                 <!--android:launchMode="singleInstance"-->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
         <activity
-                android:name=".account.ui.login.LoginActivity"
-                android:label="@string/title_activity_login"
+                android:name=".account.ui.LoginActivity"
+                android:label="@string/title_login"
                 android:parentActivityName=".app.MainActivity">
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"
@@ -44,10 +45,16 @@
                 android:exported="false">
         </service>
 
-        <service
+        <!--<service
                 android:name=".bluetooth.service.BluetoothScannerService"
                 android:enabled="true"
                 android:exported="true">
+        </service>-->
+
+        <service
+                android:name="org.altbeacon.beacon.service.BeaconService"
+                tools:node="replace">
+            <meta-data android:name="longScanForcingEnabled" android:value="true"/>
         </service>
     </application>
 

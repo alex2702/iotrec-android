@@ -34,8 +34,8 @@ interface ThingDao {
     @Query("UPDATE thing_table SET inRange = :inRange, distance = :distance, rssi = :rssi, txPower = :txPower, lastSeen = :lastSeen WHERE id = :id")
     suspend fun updateBluetoothData(id: String, inRange: Boolean, distance: Double, rssi: Int, txPower: Int, lastSeen: Date)
 
-    @Query("UPDATE thing_table SET title = :title, description = :description, lastQueried = :lastQueried WHERE id = :id")
-    suspend fun updateBackendData(id: String, title: String, description: String, lastQueried: Date)
+    @Query("UPDATE thing_table SET title = :title, description = :description, lastQueried = :lastQueried, lastTriedToQuery = :lastTriedToQuery WHERE id = :id")
+    suspend fun updateBackendData(id: String, title: String, description: String, lastQueried: Date, lastTriedToQuery: Date)
     // TODO extend by more fields when available in backend
 
     @Query("DELETE FROM thing_table")

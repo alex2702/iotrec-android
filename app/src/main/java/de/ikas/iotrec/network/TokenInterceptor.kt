@@ -16,7 +16,7 @@ class TokenInterceptor constructor(val context: Context) : Interceptor {
 
         // get current JSON Web Token from shared preferences
         val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
-        val token = sharedPrefs.getString("jsonWebToken", "")
+        val token = sharedPrefs.getString("userToken", "")
 
         val original = chain.request()
 

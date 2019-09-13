@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.room.*
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
+import de.ikas.iotrec.database.dao.CategoryDao
 import de.ikas.iotrec.database.dao.ThingDao
+import de.ikas.iotrec.database.model.Category
 //import de.ikas.iotrec.database.dao.VenueDao
 import de.ikas.iotrec.database.model.Thing
 import de.ikas.iotrec.database.util.DateTypeConverter
@@ -12,7 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [Thing::class], version = 3)
+@Database(entities = [Thing::class, Category::class], version = 8)
 @TypeConverters(DateTypeConverter::class)
 public abstract class IotRecDatabase : RoomDatabase() {
 
@@ -31,7 +33,7 @@ public abstract class IotRecDatabase : RoomDatabase() {
                     IotRecDatabase::class.java,
                     "iotrec_database"
                 )
-                    .addCallback(ThingDatabaseCallback(scope))
+                    .addCallback(IotRecDatabaseCallback(scope))
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
@@ -42,6 +44,7 @@ public abstract class IotRecDatabase : RoomDatabase() {
 
     abstract fun thingDao(): ThingDao
     //abstract fun venueDao(): VenueDao
+    abstract fun categoryDao(): CategoryDao
 
 
     override fun createOpenHelper(config: DatabaseConfiguration?): SupportSQLiteOpenHelper {
@@ -56,7 +59,7 @@ public abstract class IotRecDatabase : RoomDatabase() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    private class ThingDatabaseCallback(
+    private class IotRecDatabaseCallback(
         private val scope: CoroutineScope
     ) : RoomDatabase.Callback() {
 

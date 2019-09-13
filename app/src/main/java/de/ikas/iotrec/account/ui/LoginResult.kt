@@ -1,4 +1,4 @@
-package de.ikas.iotrec.account.ui.login
+package de.ikas.iotrec.account.ui
 
 /**
  * Authentication result : success (user details) or error message.

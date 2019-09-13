@@ -41,7 +41,7 @@ class ThingRepository(private val thingDao: ThingDao) {
     }
 
     @WorkerThread
-    suspend fun updateBackendData(id: String, title: String, description: String, lastQueried: Date) {
-        return thingDao.updateBackendData(id, title, description, lastQueried)
+    suspend fun updateBackendData(id: String, title: String, description: String, lastQueried: Date, lastTriedToQuery: Date) {
+        return thingDao.updateBackendData(id, title, description, lastQueried, lastTriedToQuery)
     }
 }

@@ -1,0 +1,22 @@
+package de.ikas.iotrec.app
+
+import android.content.Context
+import android.util.Log
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
+
+class IotRecAppLifecycleObserver constructor(context: Context) : LifecycleObserver {
+
+    private val TAG = "LifecycleObserver"
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun enterForeground() {
+        Log.d(TAG, "enterForeground")
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun enterBackground() {
+        Log.d(TAG, "enterBackground")
+    }
+}

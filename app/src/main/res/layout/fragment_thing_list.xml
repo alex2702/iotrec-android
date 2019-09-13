@@ -12,4 +12,6 @@
         app:layoutManager="LinearLayoutManager"
         tools:context=".bluetooth.ui.ThingListFragment"
         tools:listitem="@layout/fragment_thing_list_item"
-        android:descendantFocusability="blocksDescendants"/>
+        android:descendantFocusability="blocksDescendants">
+
+</androidx.recyclerview.widget.RecyclerView>

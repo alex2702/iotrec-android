@@ -24,6 +24,7 @@ data class Thing(
     var txPower: Int,
     var inRange: Boolean,
     var lastSeen: Date,
-    var lastQueried: Date
+    var lastQueried: Date,
+    var lastTriedToQuery: Date
     // TODO add image
 ) : Parcelable
