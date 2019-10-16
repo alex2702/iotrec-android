@@ -9,10 +9,13 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import de.ikas.iotrec.R
+import de.ikas.iotrec.app.IotRecApplication
 import de.ikas.iotrec.preferences.ui.PreferenceListFragment
 
 
 import de.ikas.iotrec.database.model.Category
+import de.ikas.iotrec.database.model.Preference
+import kotlinx.coroutines.*
 
 class PreferenceRecyclerViewAdapter internal constructor(
     context: Context,
@@ -23,8 +26,15 @@ class PreferenceRecyclerViewAdapter internal constructor(
     private val TAG = "PreferenceRecViewAdapt"
     private val inflater: LayoutInflater = LayoutInflater.from(context)
     private var categories = emptyList<Category>() // Cached copy of categories
-    var selectedSubCategories = mutableListOf<String>()
+    var preferences = mutableListOf<Preference>() // TODO is this needed?
     //var categoryCounts:
+
+    var app = context.applicationContext as IotRecApplication
+    var categoryRepository = app.categoryRepository
+    var preferenceRepository = app.preferenceRepository
+
+    private val job = Job()
+    private val scope = CoroutineScope(Dispatchers.Main + job)
 
     private val mOnClickListener: View.OnClickListener = View.OnClickListener { view ->
         //Log.d(TAG, "a list item was clicked")
@@ -42,24 +52,15 @@ class PreferenceRecyclerViewAdapter internal constructor(
 
         holder.categoryItemView.text = currentCategory.name
 
-        // TODO show how many sub-categories are currently selected?
-        // get sub-categories of current category => TODO
-        // count how many sub-categories are selected in user profile already => TODO
-        //val selectedSubCatsInThisCat = selectedCategories
-        //.filterNot { rangedBeacons.any { x -> x.id == it.id } /* && (it.lastSeen < (now - 5 seconds))*/ }
+        /*
+        GlobalScope.launch(Dispatchers.IO) {
+            val nrOfCategories = categoryRepository.getNumberOfSubCategories(currentCategory.textId)
+            val nrOfPreferences = preferenceRepository.getNumberOfPreferences(currentCategory.textId)
 
-        //Log.d(TAG, selectedSubCategories.toString())
-        //Log.d(TAG, currentCategory.textId)
-        //Log.d(TAG, currentCategory.textId.substringBefore('_'))
-        val selectedCount = selectedSubCategories.count { x -> x.substringBefore('_') == currentCategory.textId }
-
-        holder.textViewSelectedCounter.text = selectedCount.toString()
-
-
-
-
-        //holder.mIdView.text = item.id
-        //holder.mContentView.text = item.content
+            holder.textViewSelectedCounter.text = nrOfPreferences.toString()
+            holder.textViewAllCounter.text = nrOfCategories.toString()
+        }
+        */
 
         with(holder.itemView) {
             tag = currentCategory
@@ -71,9 +72,10 @@ class PreferenceRecyclerViewAdapter internal constructor(
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val categoryItemView: TextView = itemView.findViewById(R.id.content)
+        /*
         val textViewSelectedCounter: TextView = itemView.findViewById(R.id.selected_counter)
-        //val mIdView: TextView = mView.item_number
-        //val mContentView: TextView = mView.content
+        val textViewAllCounter: TextView = itemView.findViewById(R.id.all_counter)
+        */
 
         override fun toString(): String {
             return super.toString() + " '" + categoryItemView.text + "'"

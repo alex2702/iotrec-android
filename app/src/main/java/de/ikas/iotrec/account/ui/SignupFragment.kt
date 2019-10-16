@@ -36,19 +36,20 @@ private const val ARG_PARAM2 = "param2"
  */
 class SignupFragment : Fragment() {
 
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    //private var param1: String? = null
+    //private var param2: String? = null
     private var listener: OnFragmentInteractionListener? = null
 
     private lateinit var signupViewModel: LoginViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        /*
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+        */
     }
 
     override fun onCreateView(
@@ -104,11 +105,12 @@ class SignupFragment : Fragment() {
                 //editor.putString("user.username", signupResult.success.username)
                 //editor.putString("user.email", signupResult.success.email)
                 editor.apply()
-            }
-            activity!!.setResult(Activity.RESULT_OK)
 
-            //Complete and destroy login activity once successful
-            activity!!.finish()
+                activity!!.setResult(Activity.RESULT_OK)
+
+                //Complete and destroy login activity once successful
+                activity!!.finish()
+            }
         })
 
         emailField.afterTextChanged {
@@ -179,10 +181,12 @@ class SignupFragment : Fragment() {
         return view
     }
 
+    /*
     // TODO: Rename method, update argument and hook method into UI event
     fun onButtonPressed(uri: Uri) {
         listener?.onFragmentInteraction(uri)
     }
+    */
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -244,8 +248,8 @@ class SignupFragment : Fragment() {
         fun newInstance(param1: String, param2: String) =
             SignupFragment().apply {
                 arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+                    //putString(ARG_PARAM1, param1)
+                    //putString(ARG_PARAM2, param2)
                 }
             }
     }

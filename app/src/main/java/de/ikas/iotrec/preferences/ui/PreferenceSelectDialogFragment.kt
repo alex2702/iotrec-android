@@ -1,6 +1,5 @@
 package de.ikas.iotrec.preferences.ui
 
-import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -21,7 +20,8 @@ import de.ikas.iotrec.account.data.LoginRepository
 import de.ikas.iotrec.app.IotRecApplication
 import de.ikas.iotrec.app.MainActivity
 import de.ikas.iotrec.database.model.Category
-import de.ikas.iotrec.preferences.adapter.PreferenceDialogViewAdapter
+import de.ikas.iotrec.database.model.Preference
+import de.ikas.iotrec.preferences.adapter.PreferenceDialogRecyclerViewAdapter
 
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val CATEGORY = "category"
@@ -61,8 +61,8 @@ class PreferenceSelectDialogFragment : DialogFragment() {
         loginRepository = app.loginRepository
 
         preferenceViewModel = ViewModelProviders.of(this).get(PreferenceViewModel::class.java)
-        preferenceViewModel.updateSubCategories(category!!.textId)
-        preferenceViewModel.updateSelectedSubCategories(category!!.textId)
+        preferenceViewModel.updateSubCategoriesInCategory(category!!.textId)
+        preferenceViewModel.updatePreferencesInCategory(category!!.textId)
 
         // get categories already saved in the user profile
         //currentPreferences = loginRepository.user!!.preferences
@@ -83,23 +83,23 @@ class PreferenceSelectDialogFragment : DialogFragment() {
         // Set the adapter
         if (recyclerView is RecyclerView) {
             with(recyclerView) {
-                layoutManager = GridLayoutManager(context, 3) as RecyclerView.LayoutManager?
+                layoutManager = GridLayoutManager(context, 1) as RecyclerView.LayoutManager?
 
-                adapter = PreferenceDialogViewAdapter(context, listener)
+                adapter = PreferenceDialogRecyclerViewAdapter(context, listener)
 
                 //Log.d(TAG, "setting selectedSubCategories")
-                //(adapter as PreferenceDialogViewAdapter).selectedSubCategories = loginRepository.user!!.preferences
+                //(adapter as PreferenceDialogRecyclerViewAdapter).selectedSubCategories = loginRepository.user!!.preferences
 
                 preferenceViewModel.subCategories.observe(viewLifecycleOwner, Observer { subCategories ->
                     // Update the cached copy of the categories in the adapter.
-                    Log.d(TAG, "sC in observer: $subCategories")
-                    subCategories?.let { (adapter as PreferenceDialogViewAdapter).setSubCategories(it) }
+                    Log.d(TAG, "subCategories in observer: $subCategories")
+                    subCategories?.let { (adapter as PreferenceDialogRecyclerViewAdapter).setSubCategories(it) }
                 })
 
-                preferenceViewModel.selectedSubCategories.observe(viewLifecycleOwner, Observer { selectedSubCategories ->
+                preferenceViewModel.preferences.observe(viewLifecycleOwner, Observer { preferences ->
                     // Update the cached copy of the categories in the adapter.
-                    Log.d(TAG, "sSC in observer: $selectedSubCategories")
-                    selectedSubCategories?.let { (adapter as PreferenceDialogViewAdapter).setSelectedSubCategories(it) }
+                    Log.d(TAG, "preferences in observer: $preferences")
+                    preferences?.let { (adapter as PreferenceDialogRecyclerViewAdapter).setPreferences(it) }
                 })
 
 
@@ -183,7 +183,7 @@ class PreferenceSelectDialogFragment : DialogFragment() {
      * for more information.
      */
     interface OnFragmentInteractionListener {
-        fun onPreferenceSelectDialogFragmentInteraction(category: Category)
+        fun onPreferenceSelectDialogFragmentInteraction(preference: Preference)
     }
 
     companion object {

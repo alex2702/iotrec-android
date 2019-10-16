@@ -4,17 +4,15 @@ import android.content.Context
 import androidx.room.*
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
-import de.ikas.iotrec.database.dao.CategoryDao
-import de.ikas.iotrec.database.dao.ThingDao
-import de.ikas.iotrec.database.model.Category
+import de.ikas.iotrec.database.dao.*
+import de.ikas.iotrec.database.model.*
 //import de.ikas.iotrec.database.dao.VenueDao
-import de.ikas.iotrec.database.model.Thing
 import de.ikas.iotrec.database.util.DateTypeConverter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [Thing::class, Category::class], version = 8)
+@Database(entities = [Thing::class, Category::class, Preference::class, Recommendation::class, Feedback::class], version = 17)
 @TypeConverters(DateTypeConverter::class)
 public abstract class IotRecDatabase : RoomDatabase() {
 
@@ -45,6 +43,9 @@ public abstract class IotRecDatabase : RoomDatabase() {
     abstract fun thingDao(): ThingDao
     //abstract fun venueDao(): VenueDao
     abstract fun categoryDao(): CategoryDao
+    abstract fun preferenceDao(): PreferenceDao
+    abstract fun recommendationDao(): RecommendationDao
+    abstract fun feedbackDao(): FeedbackDao
 
 
     override fun createOpenHelper(config: DatabaseConfiguration?): SupportSQLiteOpenHelper {

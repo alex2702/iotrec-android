@@ -18,9 +18,9 @@
     <string name="prompt_email">Email Address</string>
     <string name="prompt_password">Password</string>
     <string name="prompt_password_confirm">Repeat Password</string>
-    <string name="prompt_display_name">Display Name</string>
+    <string name="prompt_username">Username</string>
     <string name="action_sign_in">Sign in</string>
-    <string name="action_go_to_signup">Don\'t have an account yet? Sign up now</string>
+    <string name="action_go_to_signup">Don\'t have an account yet?\nSign up now</string>
     <string name="action_back_to_login">Back to Login</string>
     <string name="action_sign_up">Register</string>
     <string name="action_logout">Log out</string>
@@ -29,8 +29,8 @@
     <string name="invalid_email">Not a valid email address</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="passwords_do_not_match">Passwords do not match</string>
-    <string name="login_failed">"Login failed"</string>
-    <string name="signup_failed">"Signup failed"</string>
+    <string name="login_failed">"Login failed. Please check username and password."</string>
+    <string name="signup_failed">"Signup failed. The username or email address may already be in use."</string>
     <string name="not_logged_in">You\'re not logged in.</string>
 
     <string name="network_failed">Network connection failed. Are you online? Is the backend online?</string>

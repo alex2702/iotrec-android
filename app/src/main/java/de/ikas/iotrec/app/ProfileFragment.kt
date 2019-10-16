@@ -19,10 +19,9 @@ import com.google.android.material.snackbar.Snackbar
 
 import de.ikas.iotrec.R
 import de.ikas.iotrec.account.ui.LoginActivity
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import android.content.SharedPreferences
 import kotlinx.android.synthetic.main.activity_login.*
+import kotlinx.coroutines.*
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -114,7 +113,7 @@ class ProfileFragment : Fragment() {
         val username = mainActivity.loginRepository.user?.username
         val email = mainActivity.loginRepository.user?.email
         val preferences = mainActivity.loginRepository.user?.preferences
-        preferences?.sort()
+        //preferences?.sort()   // TODO fix this
 
         // get all UI elements of fragment
         val usernameText = view!!.findViewById<TextView>(R.id.username)
@@ -132,7 +131,14 @@ class ProfileFragment : Fragment() {
             Log.d(TAG, username.toString())
             usernameText.text = username
             emailText.text = email
-            preferencesText.text = preferences?.joinToString(separator = "\n")
+            //preferencesText.text = preferences?.joinToString(separator = "\n")
+
+            var preferencesString = ""
+            for(pref in preferences!!) {
+                preferencesString += "${pref.category} (${pref.value})\n"
+            }
+            preferencesText.text = preferencesString
+
             usernameText.visibility = View.VISIBLE
             emailHeader.visibility = View.VISIBLE
             emailText.visibility = View.VISIBLE
@@ -157,6 +163,7 @@ class ProfileFragment : Fragment() {
             //TODO use logout method from LoginRepo?
 
             mainActivity.loginRepository.logout()
+
 
             //clear profile data from sharedPrefs
             //val editor = sharedPrefs.edit()

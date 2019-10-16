@@ -1,8 +1,12 @@
 package de.ikas.iotrec.account.data.model
 
 import com.squareup.moshi.Json
+import de.ikas.iotrec.database.model.Preference
 
 data class User(
+    @field:Json(name = "id")
+    var id: Int,
+
     @field:Json(name = "username")
     var username: String,
 
@@ -10,5 +14,5 @@ data class User(
     var email: String,
 
     @field:Json(name = "preferences")
-    var preferences: MutableList<String>
+    var preferences: MutableList<Preference>
 )

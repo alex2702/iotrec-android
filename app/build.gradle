@@ -61,8 +61,4 @@ dependencies {
     kapt 'androidx.lifecycle:lifecycle-compiler:2.1.0-beta01'
     implementation 'com.squareup.moshi:moshi-adapters:1.8.0'
     implementation("com.squareup.moshi:moshi-kotlin:1.8.0")
-
-    //implementation "org.permissionsdispatcher:permissionsdispatcher:4.5.0"
-    //kapt "org.permissionsdispatcher:permissionsdispatcher-processor:4.5.0"
-
 }

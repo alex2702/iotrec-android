@@ -1,0 +1,25 @@
+package de.ikas.iotrec.network.json
+
+data class ThingJson(
+    var id: String,
+    var title: String,
+    var parent: String,
+    var level: Int,
+    var selected: Boolean
+
+    "id": "acfd065e-c3c0-11e3-9bbe-1a514932ac01-2-22946",
+"title": "Vending Machine",
+"description": "This is a vending machine.",
+"type": "BCN_I",
+"uuid": "acfd065e-c3c0-11e3-9bbe-1a514932ac01",
+"major_id": 2,
+"minor_id": 22946,
+"image": null,
+"created_at": "2019-09-15T10:51:49.074717Z",
+"address": "",
+"location": "",
+"categories": [
+"Recreation_Food",
+"Shopping_Food"
+]
+)

@@ -1,6 +1,6 @@
 package de.ikas.iotrec.app
 
-import android.app.Dialog
+import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -22,26 +22,21 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.content.IntentFilter
 import com.google.android.material.snackbar.Snackbar
 import de.ikas.iotrec.database.model.Category
-import android.view.WindowManager
 import android.widget.*
 import androidx.lifecycle.ViewModelProviders
 import de.ikas.iotrec.database.dao.CategoryDao
 import de.ikas.iotrec.database.db.IotRecDatabase
 import de.ikas.iotrec.database.repository.CategoryRepository
-import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.GridLayoutManager
 import de.ikas.iotrec.account.data.LoginRepository
-import de.ikas.iotrec.preferences.adapter.PreferenceDialogViewAdapter
 import de.ikas.iotrec.preferences.ui.PreferenceListFragment
 import de.ikas.iotrec.preferences.ui.PreferenceSelectDialogFragment
 import de.ikas.iotrec.preferences.ui.PreferenceViewModel
-import android.R.attr.fragment
-import android.R.attr.key
-//import permissions.dispatcher.RuntimePermissions
+import android.content.pm.PackageManager
+import android.view.View
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import de.ikas.iotrec.database.model.Preference
 
-
-//@RuntimePermissions
 class MainActivity :
     AppCompatActivity(),
     ThingListFragment.OnListFragmentInteractionListener,
@@ -69,13 +64,15 @@ class MainActivity :
     private lateinit var categoryRepository: CategoryRepository
 
     lateinit var loginRepository: LoginRepository
-    lateinit var currentlySelectedUserPreferences: MutableList<String>
+    lateinit var userPreferences: MutableList<Preference>
     var userPreferencesToBeAdded = mutableListOf<String>()
     var userPreferencesToBeRemoved = mutableListOf<String>()
     //private var preferenceDialogListener: OnPreferenceDialogFragmentInteractionListener? = null
 
     private val TAG = "MainActivity"
-    private val PERMISSION_REQUEST_COARSE_LOCATION = 1
+
+    // constants for permission request callbacks
+    private val IOTREC_PERMISSION_REQUEST_COARSE_LOCATION = 1
 
     private lateinit var broadcastReceiver: BroadcastReceiver
 
@@ -100,12 +97,14 @@ class MainActivity :
                 loadFragment(item.itemId)
                 return@OnNavigationItemSelectedListener true
             }
+            /*
             R.id.navigation_settings -> {
                 setTitle(R.string.title_settings)
                 textMessage.setText(R.string.title_settings)
                 loadFragment(item.itemId)
                 return@OnNavigationItemSelectedListener true
             }
+            */
             R.id.navigation_profile -> {
                 // check if a user is logged in (via token in sharedPrefs)
                 val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
@@ -149,7 +148,7 @@ class MainActivity :
         app = application as IotRecApplication
         loginRepository = app.loginRepository
         if(loginRepository.user != null) {
-            currentlySelectedUserPreferences = loginRepository.user!!.preferences
+            userPreferences = loginRepository.user!!.preferences
         }
 
 
@@ -245,11 +244,64 @@ class MainActivity :
         */
 
 
+
+        // only start bluetooth scanning if we have location permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {
+
+            Log.d(TAG, "don't have permission yet, requesting...")
+
+            // permission is not granted
+
+            // check if we should show an explanation (i.e. when the user has denied permission before)
+            //if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                // TODO
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+            //} else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
+                    IOTREC_PERMISSION_REQUEST_COARSE_LOCATION
+                )
+            //}
+        } else {
+            Log.d(TAG, "already have permission")
+            // Permission has already been granted, start bluetooth scanning
+            app.startBluetoothScanning()
+        }
+
         // preference handling
         categoryViewModel = ViewModelProviders.of(this).get(PreferenceViewModel::class.java)
         categoriesDao = IotRecDatabase.getDatabase(this, GlobalScope).categoryDao()
         categoryRepository = CategoryRepository(categoriesDao)
     }
+
+    override fun onRequestPermissionsResult(requestCode: Int,
+                                            permissions: Array<String>, grantResults: IntArray) {
+        when (requestCode) {
+            IOTREC_PERMISSION_REQUEST_COARSE_LOCATION -> {
+                // if request is cancelled, the result arrays are empty
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    // permission was granted, start bluetooth scanning
+                    app.startBluetoothScanning()
+                } else {
+                    // permission denied
+                    // TODO display a message in ThingListFragment but find a way to start scanning and removing the message once permission is granted
+                }
+                return
+            }
+
+            // add other 'when' lines to check for other permissions this app might request
+
+            else -> {
+                // ignore all other requests
+            }
+        }
+    }
+
 
     override fun onPause() {
         super.onPause()
@@ -288,9 +340,11 @@ class MainActivity :
             R.id.navigation_preferences -> {
                 PreferenceListFragment.newInstance(1)
             }
+            /*
             R.id.navigation_settings -> {
                 SettingFragment.newInstance(1)
             }
+            */
             R.id.navigation_profile -> {
                 ProfileFragment()
             }
@@ -360,7 +414,7 @@ class MainActivity :
     override fun onThingListFragmentInteraction(thing: Thing) {
         Log.d(TAG, "a thing list item was clicked")
 
-        val bottomSheetFragment = ThingBottomSheetFragment.newInstance(thing)
+        val bottomSheetFragment = ThingBottomSheetFragment.newInstance(thing, loginRepository.isLoggedIn())
         bottomSheetFragment.show(supportFragmentManager, bottomSheetFragment.tag)
 
         /*
@@ -383,7 +437,7 @@ class MainActivity :
         Log.d(TAG, "a preference list item was clicked")
 
         GlobalScope.launch {
-            loginRepository.saveUser()
+            loginRepository.saveUser(true)
         }
 
         // load dialog fragment to select sub-categories
@@ -420,8 +474,23 @@ class MainActivity :
     }
     */
 
-    override fun onPreferenceSelectDialogFragmentInteraction(category: Category) {
-        Log.d(TAG, category.toString())
+    fun onPreferenceToggle(toggleButtonView: View) {
+        val radioGroupView = toggleButtonView.parent as RadioGroup
+        radioGroupView.check(0)
+        radioGroupView.check(toggleButtonView.id)
+
+        val selectedCategory = radioGroupView.tag as Category
+        Log.d(TAG, "clicked category: $selectedCategory")
+
+        when {
+            toggleButtonView.id == R.id.button_negative -> GlobalScope.launch { app.loginRepository.setPreference(selectedCategory.textId, -1) }
+            toggleButtonView.id == R.id.button_neutral -> GlobalScope.launch { app.loginRepository.setPreference(selectedCategory.textId, 0) }
+            toggleButtonView.id == R.id.button_positive -> GlobalScope.launch { app.loginRepository.setPreference(selectedCategory.textId, 1) }
+        }
+    }
+
+    override fun onPreferenceSelectDialogFragmentInteraction(preference: Preference) {
+        Log.d(TAG, preference.toString())
 
         //GlobalScope.launch {
         //    loginRepository.saveUser()

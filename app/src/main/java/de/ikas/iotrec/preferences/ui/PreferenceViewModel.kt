@@ -6,9 +6,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import de.ikas.iotrec.app.IotRecApplication
-import de.ikas.iotrec.database.db.IotRecDatabase
 import de.ikas.iotrec.database.model.Category
+import de.ikas.iotrec.database.model.Preference
 import de.ikas.iotrec.database.repository.CategoryRepository
+import de.ikas.iotrec.database.repository.PreferenceRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -16,30 +17,34 @@ class PreferenceViewModel public constructor(application: Application) : Android
 
     private val TAG = "PreferenceViewModel"
 
-    private val repository: CategoryRepository
+    private val categoryRepository: CategoryRepository
+    private val preferenceRepository: PreferenceRepository
     val topLevelCategories: LiveData<List<Category>>
     var subCategories: LiveData<List<Category>>
-    var selectedSubCategories: LiveData<List<Category>>
+    var preferences: LiveData<List<Preference>>
 
     init {
         //val categoriesDao = IotRecDatabase.getDatabase(application, viewModelScope).categoryDao()
-        //repository = CategoryRepository(categoriesDao)
+        //categoryRepository = CategoryRepository(categoriesDao)
         val app = application as IotRecApplication
-        repository = app.categoryRepository
+        categoryRepository = app.categoryRepository
+        preferenceRepository = app.preferenceRepository
 
-        topLevelCategories = repository.topLevelCategories
-        subCategories = repository.subCategories
-        selectedSubCategories = repository.selectedSubCategories
+        topLevelCategories = categoryRepository.topLevelCategories
+        subCategories = categoryRepository.subCategories
+        preferences = preferenceRepository.preferences
     }
 
-    fun updateSubCategories(categoryId: String) = viewModelScope.launch(Dispatchers.IO) {
-        subCategories = repository.getSubCategories(categoryId)
-        //repository.updateSubCategories(categoryId)
+    // gets all sub categories of a parent category
+    fun updateSubCategoriesInCategory(categoryId: String) = viewModelScope.launch(Dispatchers.IO) {
+        subCategories = categoryRepository.getSubCategories(categoryId)
+        //categoryRepository.updateSubCategories(categoryId)
     }
 
-    fun updateSelectedSubCategories(categoryId: String) = viewModelScope.launch(Dispatchers.IO) {
-        Log.d(TAG, "updateSelectedSubCategories with categoryId $categoryId")
-        selectedSubCategories = repository.getSelectedSubCategories(categoryId)
-        //repository.updateSelectedSubCategories(categoryId)
+    // gets all preferences within a category
+    fun updatePreferencesInCategory(categoryId: String) = viewModelScope.launch(Dispatchers.IO) {
+        Log.d(TAG, "updatePreferences with categoryId $categoryId")
+        preferences = preferenceRepository.getPreferencesInCategory(categoryId)
+        //categoryRepository.updateSelectedSubCategories(categoryId)
     }
 }

@@ -1,18 +1,17 @@
 package de.ikas.iotrec.bluetooth.ui
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import de.ikas.iotrec.R
 import de.ikas.iotrec.database.model.Thing
+import java.text.SimpleDateFormat
 import java.util.*
 
 class ThingRecyclerViewAdapter internal constructor(
@@ -35,7 +34,10 @@ class ThingRecyclerViewAdapter internal constructor(
     private var things = emptyList<Thing>() // Cached copy of things
 
     inner class ThingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val thingItemView: TextView = itemView.findViewById(R.id.content)
+        val thingTitle: TextView = itemView.findViewById(R.id.thing_title)
+        val thingId: TextView = itemView.findViewById(R.id.thing_id)
+        val thingDistance: TextView = itemView.findViewById(R.id.thing_distance)
+        val thingLastSeen: TextView = itemView.findViewById(R.id.thing_last_seen_time)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ThingViewHolder {
@@ -47,13 +49,15 @@ class ThingRecyclerViewAdapter internal constructor(
     override fun onBindViewHolder(holder: ThingViewHolder, position: Int) {
         val currentThing = things[position]
 
-        holder.thingItemView.text = currentThing.title
-        //TODO add more elements
+        holder.thingTitle.text = currentThing.title
+        holder.thingId.text = currentThing.id
+        holder.thingDistance.text = "%.2f".format(currentThing.distance) + " m"
+        holder.thingLastSeen.text = SimpleDateFormat("HH:mm:ss").format(currentThing.lastSeen)
 
-        if(currentThing.lastQueried.equals(Date(0))) {
-            holder.thingItemView.setTextColor(Color.GRAY)
+        if(currentThing.lastQueried!!.equals(Date(0))) {
+            holder.thingTitle.setTextColor(Color.GRAY)
         } else {
-            holder.thingItemView.setTextColor(Color.BLACK)
+            holder.thingTitle.setTextColor(Color.BLACK)
         }
 
         with(holder.itemView) {

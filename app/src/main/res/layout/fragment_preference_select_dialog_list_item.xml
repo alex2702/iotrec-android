@@ -1,23 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="120dp"
-        android:background="?android:attr/selectableItemBackground"
-        android:clickable="true"
-        android:focusable="false"
-        android:padding="16dp">
+<androidx.constraintlayout.widget.ConstraintLayout
+xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:orientation="horizontal"
+android:background="?android:attr/selectableItemBackground"
+android:clickable="false"
+android:focusable="false">
 
     <TextView
             android:id="@+id/content"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="0dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/text_margin"
             android:textAppearance="?attr/textAppearanceListItem"
-            tools:text="Item"
-            android:fontFamily="sans-serif-light"
-            android:gravity="center" />
+            tools:text="Category Name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
-</LinearLayout>
+    <RadioGroup
+            android:id="@+id/radio_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" >
+
+        <ToggleButton
+                android:id="@+id/button_negative"
+                android:layout_width="48dp"
+                android:layout_height="wrap_content"
+                android:text="–"
+                android:textOn="–"
+                android:textOff="–"
+                android:onClick="onPreferenceToggle" />
+
+        <ToggleButton
+                android:id="@+id/button_neutral"
+                android:layout_width="48dp"
+                android:layout_height="wrap_content"
+                android:text="○"
+                android:textOn="○"
+                android:textOff="○"
+                android:textStyle="bold"
+                android:onClick="onPreferenceToggle" />
+
+        <ToggleButton
+                android:id="@+id/button_positive"
+                android:layout_width="48dp"
+                android:layout_height="wrap_content"
+                android:text="+"
+                android:textOn="+"
+                android:textOff="+"
+                android:onClick="onPreferenceToggle" />
+    </RadioGroup>
+
+    <!--
+    <ToggleButton
+            android:id="@+id/button_negative"
+            android:layout_width="48dp"
+            android:layout_height="wrap_content"
+            android:text="–"
+            android:textOn="–"
+            android:textOff="–"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/button_neutral"
+            app:layout_constraintEnd_toStartOf="@id/button_neutral" />
+
+    <ToggleButton
+            android:id="@+id/button_neutral"
+            android:layout_width="48dp"
+            android:layout_height="wrap_content"
+            android:text="○"
+            android:textOn="○"
+            android:textOff="○"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/button_positive"
+            app:layout_constraintRight_toLeftOf="@id/button_positive"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <ToggleButton
+            android:id="@+id/button_positive"
+            android:layout_width="48dp"
+            android:layout_height="wrap_content"
+            android:text="+"
+            android:textOn="+"
+            android:textOff="+"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
+    -->
+
+</androidx.constraintlayout.widget.ConstraintLayout>

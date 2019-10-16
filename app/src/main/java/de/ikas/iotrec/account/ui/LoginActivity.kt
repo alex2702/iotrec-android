@@ -79,11 +79,13 @@ class LoginActivity : AppCompatActivity(), SignupFragment.OnFragmentInteractionL
                 //editor.putString("user.email", loginResult.success.email)
                 //editor.putString("user.token", loginResult.success.token)
                 //editor.apply()
-            }
-            setResult(Activity.RESULT_OK)
 
-            //Complete and destroy login activity once successful
-            finish()
+                setResult(Activity.RESULT_OK)
+
+                //Complete and destroy login activity once successful
+                finish()
+            }
+
         })
 
 

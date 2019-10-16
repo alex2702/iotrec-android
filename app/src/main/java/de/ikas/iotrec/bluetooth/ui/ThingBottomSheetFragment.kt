@@ -20,10 +20,11 @@ class ThingBottomSheetFragment : BottomSheetDialogFragment() {
     //private lateinit var thingViewModel: ThingViewModel
 
     companion object {
-        fun newInstance(thing: Thing): ThingBottomSheetFragment =
+        fun newInstance(thing: Thing, loginStatus: Boolean): ThingBottomSheetFragment =
             ThingBottomSheetFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable("CLICKED_THING", thing)
+                    putInt("LOGIN_STATUS", if (loginStatus) 1 else 0)
                 }
             }
     }
@@ -34,6 +35,8 @@ class ThingBottomSheetFragment : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?
     ): View? {
         val thing = arguments!!.getParcelable("CLICKED_THING") as Thing
+        val loginStatus = arguments!!.getInt("LOGIN_STATUS", 0)
+        val loginStatusBoolean = loginStatus == 1
 
         val view = inflater.inflate(R.layout.fragment_thing_bottom_sheet, container, false)
 
@@ -41,7 +44,16 @@ class ThingBottomSheetFragment : BottomSheetDialogFragment() {
         textViewTitle.text = thing.title
 
         val textViewDescription: TextView = view.findViewById(R.id.thing_description)
-        textViewDescription.text = thing.description
+        if(loginStatusBoolean) {
+            if(thing.description == "") {
+                textViewDescription.text = "This beacon's details have not been fetched yet or could not be found."
+            } else {
+                textViewDescription.text = thing.description
+            }
+        } else {
+            textViewDescription.text = "Please log in or sign up to view a beacon's details."
+        }
+
 
         return view
     }

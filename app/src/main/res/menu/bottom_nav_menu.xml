@@ -11,10 +11,12 @@
             android:icon="@drawable/ic_dashboard_black_24dp"
             android:title="@string/title_preferences"/>
 
+    <!--
     <item
             android:id="@+id/navigation_settings"
             android:icon="@drawable/ic_notifications_black_24dp"
             android:title="@string/title_settings"/>
+    -->
 
     <item
             android:id="@+id/navigation_profile"

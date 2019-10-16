@@ -15,8 +15,8 @@ class CategoryRepository(private val categoryDao: CategoryDao) {
 
     val allCategories: LiveData<List<Category>> = categoryDao.getAllCategories()
     val topLevelCategories: LiveData<List<Category>> = categoryDao.getTopLevelCategories()
-    var subCategories: LiveData<List<Category>> = categoryDao.getSubCategories("")
-    var selectedSubCategories: LiveData<List<Category>> = categoryDao.getSelectedSubCategories("")
+    var subCategories: LiveData<List<Category>> = categoryDao.getSubCategories("Root")
+    //var selectedSubCategories: LiveData<List<Category>> = categoryDao.getSelectedSubCategories("")
 
     @WorkerThread
     suspend fun insert(category: Category) {
@@ -33,12 +33,10 @@ class CategoryRepository(private val categoryDao: CategoryDao) {
         categoryDao.update(category)
     }
 
-    /*
     @WorkerThread
     suspend fun getCategory(id: String): Category{
         return categoryDao.getCategory(id)
     }
-    */
 
     @WorkerThread
     suspend fun updateSubCategories(categoryId: String) {
@@ -51,6 +49,12 @@ class CategoryRepository(private val categoryDao: CategoryDao) {
         return subCategories
     }
 
+    @WorkerThread
+    fun getNumberOfSubCategories(categoryId: String): Int {
+        return categoryDao.getNumberOfSubCategories(categoryId)
+    }
+
+    /*
     @WorkerThread
     suspend fun getSelectedSubCategories(categoryId: String): LiveData<List<Category>> {
         selectedSubCategories = categoryDao.getSelectedSubCategories(categoryId)
@@ -77,6 +81,10 @@ class CategoryRepository(private val categoryDao: CategoryDao) {
     suspend fun setAllCategoriesSelectedFalse(): Int {
         return categoryDao.setAllCategoriesSelectedFalse()
     }
+    */
+
+
+
 
     /*
     fun setSelectedSubCategories(selectedCategories: List<String>) {
@@ -87,4 +95,9 @@ class CategoryRepository(private val categoryDao: CategoryDao) {
         return selectedSubCategories
     }
     */
+
+    @WorkerThread
+    fun deleteAll() {
+        categoryDao.deleteAll()
+    }
 }

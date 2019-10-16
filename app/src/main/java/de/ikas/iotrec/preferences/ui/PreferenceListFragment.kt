@@ -6,6 +6,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -76,31 +78,31 @@ class PreferenceListFragment : Fragment() {
             columnCount = it.getInt(ARG_COLUMN_COUNT)
         }
 
-        // insert object into database
-        GlobalScope.launch {
-            try {
+        if(loginRepository.isLoggedIn()) {
+            // get categories and insert them into database
+            GlobalScope.launch {
+                try {
+                    val result = app.iotRecApi.getCategories()
 
-                //val result = mainActivity.getApi().getCategories()
-                val result = app.iotRecApi.getCategories()
+                    // if successful, update database object
+                    if (result.isSuccessful) {
+                        val resultCategories = result.body()
+                        Log.d(TAG, resultCategories.toString())
 
-                // if successful, update database object
-                if (result.isSuccessful) {
-                    val resultCategories = result.body()
-                    Log.d(TAG, resultCategories.toString())
-
-                    // insert categories into database
-                    categoryRepository.insertMultiple(*resultCategories!!.toTypedArray())
-                } else {
-                    mainActivity.runOnUiThread {
-                        Toast.makeText(
-                            mainActivity,
-                            "Could not get categories: ${result.message()}",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        // insert categories into database
+                        categoryRepository.insertMultiple(*resultCategories!!.toTypedArray())
+                    } else {
+                        mainActivity.runOnUiThread {
+                            Toast.makeText(
+                                mainActivity,
+                                "Could not get categories: ${result.message()}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
+                } catch(e: Throwable) {
+                    Log.e(TAG, e.toString())
                 }
-            } catch(e: Throwable) {
-                Log.e(TAG, e.toString())
             }
         }
     }
@@ -114,31 +116,53 @@ class PreferenceListFragment : Fragment() {
         Log.d(TAG, "onCreateView")
 
         val view = inflater.inflate(R.layout.fragment_preference_list, container, false)
+        val recyclerView = view.findViewById<RecyclerView>(R.id.list)
+        val notLoggedInText = view.findViewById<TextView>(R.id.categories_not_logged_in_text)
+        val notLoggedInButton = view.findViewById<Button>(R.id.categories_not_logged_in_button)
 
-        // Set the adapter
-        if (view is RecyclerView) {
-            with(view) {
-                layoutManager = when {
-                    columnCount <= 1 -> LinearLayoutManager(context)
-                    else -> GridLayoutManager(context, columnCount)
+        if(loginRepository.isLoggedIn()) {
+            recyclerView.visibility = View.VISIBLE
+            notLoggedInText.visibility = View.GONE
+            notLoggedInButton.visibility = View.GONE
+
+            // Set the adapter
+            if (recyclerView is RecyclerView) {
+                with(recyclerView) {
+                    layoutManager = when {
+                        columnCount <= 1 -> LinearLayoutManager(context)
+                        else -> GridLayoutManager(context, columnCount)
+                    }
+
+                    adapter = PreferenceRecyclerViewAdapter(context, listener)
+
+                    // TODO replace with live data
+                    if (loginRepository.isLoggedIn()) {
+                        (adapter as PreferenceRecyclerViewAdapter).preferences =
+                            loginRepository.user!!.preferences   // TODO NPE on new setup // TODO is this needed?
+                    }
+
+                    categoryViewModel.topLevelCategories.observe(
+                        viewLifecycleOwner,
+                        Observer { categories ->
+                            // Update the cached copy of the categories in the adapter.
+                            categories?.let {
+                                (adapter as PreferenceRecyclerViewAdapter).setTopLevelCategories(
+                                    it
+                                )
+                            }
+                        }
+                    )
                 }
-
-                adapter = PreferenceRecyclerViewAdapter(context, listener)
-
-                // TODO replace with live data
-                if(loginRepository.isLoggedIn()) {
-                    (adapter as PreferenceRecyclerViewAdapter).selectedSubCategories = loginRepository.user!!.preferences   // TODO NPE on new setup
-                }
-
-                categoryViewModel.topLevelCategories.observe(viewLifecycleOwner, Observer { categories ->
-                    // Update the cached copy of the categories in the adapter.
-                    categories?.let { (adapter as PreferenceRecyclerViewAdapter).setTopLevelCategories(it) }
-                })
-
-
             }
+
+            return view
+        } else {
+            recyclerView.visibility = View.GONE
+            notLoggedInText.visibility = View.VISIBLE
+            notLoggedInButton.visibility = View.VISIBLE
+
+            return view
         }
-        return view
     }
 
     // https://stackoverflow.com/a/37279212

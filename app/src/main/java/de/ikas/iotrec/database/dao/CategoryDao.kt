@@ -3,12 +3,7 @@ package de.ikas.iotrec.database.dao
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import de.ikas.iotrec.database.model.Category
-import de.ikas.iotrec.database.model.Thing
-import java.util.*
-import de.ikas.iotrec.account.data.model.User
 import androidx.room.OnConflictStrategy
-
-
 
 @Dao
 interface CategoryDao {
@@ -31,12 +26,16 @@ interface CategoryDao {
     @Query("DELETE FROM category_table")
     fun deleteAll()
 
-    @Query("SELECT * from category_table WHERE level = 0")
+    @Query("SELECT * from category_table WHERE level = 1")
     fun getTopLevelCategories(): LiveData<List<Category>>
 
     @Query("SELECT * from category_table WHERE parentTextId = :categoryId")
     fun getSubCategories(categoryId: String): LiveData<List<Category>>
 
+    @Query("SELECT COUNT(*) FROM category_table WHERE parentTextId = :categoryId")
+    fun getNumberOfSubCategories(categoryId: String): Int
+
+    /*
     @Query("SELECT * from category_table WHERE parentTextId = :categoryId AND selected = 1")
     fun getSelectedSubCategories(categoryId: String): LiveData<List<Category>>
 
@@ -48,4 +47,5 @@ interface CategoryDao {
 
     @Query("UPDATE category_table SET selected = 0")
     suspend fun setAllCategoriesSelectedFalse(): Int
+    */
 }

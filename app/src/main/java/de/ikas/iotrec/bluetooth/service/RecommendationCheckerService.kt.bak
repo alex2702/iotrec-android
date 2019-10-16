@@ -1,0 +1,52 @@
+package de.ikas.iotrec.bluetooth.service
+
+import android.app.IntentService
+import android.content.Intent
+import android.content.Context
+import android.util.Log
+
+private val TAG = "RecommendationCheckerS"
+
+private const val CHECK_FOR_RECOMMENDATION = "de.ikas.iotrec.bluetooth.service.action.CHECK_FOR_RECOMMENDATION"
+private const val THING_ID = "de.ikas.iotrec.bluetooth.service.extra.THING_ID"
+
+/**
+ * An [IntentService] subclass for handling asynchronous task requests in
+ * a service on a separate handler thread.
+ */
+class RecommendationCheckerService : IntentService("RecommendationCheckerService") {
+
+    override fun onHandleIntent(intent: Intent?) {
+        when (intent?.action) {
+            CHECK_FOR_RECOMMENDATION -> {
+                val thingId = intent.getStringExtra(THING_ID)
+                handleAction(thingId)
+            }
+        }
+    }
+
+    /**
+     * Handle action in the provided background thread with the provided
+     * parameters.
+     */
+    private fun handleAction(thingId: String) {
+        Log.d(TAG, "handleAction")
+    }
+
+    companion object {
+        /**
+         * Starts this service to perform an action with the given parameters. If
+         * the service is already performing a task this action will be queued.
+         *
+         * @see IntentService
+         */
+        @JvmStatic
+        fun startAction(context: Context, thingId: String) {
+            val intent = Intent(context, RecommendationCheckerService::class.java).apply {
+                action = CHECK_FOR_RECOMMENDATION
+                putExtra(THING_ID, thingId)
+            }
+            context.startService(intent)
+        }
+    }
+}

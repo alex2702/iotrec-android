@@ -22,7 +22,7 @@ class ThingRepository(private val thingDao: ThingDao) {
 
     @WorkerThread
     suspend fun updateBluetoothData(thing: Thing) {
-        thingDao.updateBluetoothData(thing.id, thing.inRange, thing.distance, thing.rssi, thing.txPower, thing.lastSeen)
+        thingDao.updateBluetoothData(thing.id, thing.inRange!!, thing.distance!!, thing.rssi!!, thing.txPower!!, thing.lastSeen!!)
     }
 
     @WorkerThread
@@ -36,12 +36,32 @@ class ThingRepository(private val thingDao: ThingDao) {
     }
 
     @WorkerThread
+    suspend fun getThingLive(id: String): LiveData<Thing> {
+        return thingDao.getThingLive(id)
+    }
+
+    @WorkerThread
     suspend fun setThingInRange(id: String, inRange: Boolean) {
         return thingDao.setThingInRange(id, inRange)
     }
 
     @WorkerThread
-    suspend fun updateBackendData(id: String, title: String, description: String, lastQueried: Date, lastTriedToQuery: Date) {
-        return thingDao.updateBackendData(id, title, description, lastQueried, lastTriedToQuery)
+    suspend fun updateBackendData(id: String, title: String, description: String, lastQueried: Date, lastTriedToQuery: Date, lastRecommended: Date, lastCheckedForRecommendation: Date) {
+        return thingDao.updateBackendData(id, title, description, lastQueried, lastTriedToQuery, lastRecommended, lastCheckedForRecommendation)
+    }
+
+    @WorkerThread
+    suspend fun updateLastRecommended(id: String, lastRecommended: Date) {
+        return thingDao.updateLastRecommended(id, lastRecommended)
+    }
+
+    @WorkerThread
+    suspend fun updateLastCheckedForRecommendation(id: String, lastCheckedForRecommendation: Date) {
+        return thingDao.updateLastCheckedForRecommendation(id, lastCheckedForRecommendation)
+    }
+
+    @WorkerThread
+    fun deleteAll() {
+        thingDao.deleteAll()
     }
 }

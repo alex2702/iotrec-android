@@ -19,7 +19,8 @@ import com.squareup.moshi.Types.newParameterizedType
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import de.ikas.iotrec.database.model.Category
-import de.ikas.iotrec.database.repository.CategoryRepository
+import de.ikas.iotrec.database.model.Preference
+import de.ikas.iotrec.database.repository.*
 
 
 /**
@@ -34,6 +35,11 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
     private val TAG = "LoginRepository"
     private lateinit var app: IotRecApplication
     private lateinit var categoryRepository: CategoryRepository
+    private lateinit var preferenceRepository: PreferenceRepository
+    private lateinit var thingRepository: ThingRepository
+    private lateinit var feedbackRepository: FeedbackRepository
+    private lateinit var recommendationRepository: RecommendationRepository
+    //private lateinit var ratingRepository: ratingRepository   //TODO
 
     // in-memory cache of the user object
     var user: User? = null
@@ -54,6 +60,11 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
 
         app = context.applicationContext as IotRecApplication
         categoryRepository = app.categoryRepository
+        preferenceRepository = app.preferenceRepository
+        thingRepository = app.thingRepository
+        feedbackRepository = app.feedbackRepository
+        recommendationRepository = app.recommendationRepository
+        //ratingRepository = app.ratingRepository      // TODO
 
         val moshi = Moshi.Builder().build()
         val adapter = moshi.adapter(User::class.java)
@@ -74,7 +85,19 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
         editor.remove("userToken")
         editor.apply()
 
-        // TODO set all preferences in db to selected=false
+        // empty the preferences table
+
+        GlobalScope.launch {
+            preferenceRepository.deleteAll()
+            categoryRepository.deleteAll()
+            thingRepository.deleteAll()
+            recommendationRepository.deleteAll()
+            feedbackRepository.deleteAll()
+            //ratingsRepository.deleteAll()   //TODO
+        }
+
+
+        // TODO anything else to clear?
     }
 
     suspend fun login(username: String, password: String): Response<LoggedInUser> {
@@ -118,16 +141,16 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
         this.token = loggedInUser.token
 
         // save to SharedPreferences
-        saveUser()
+        saveUser(false)
     }
 
     private suspend fun setRegisteredUser(registeredUser: RegisteredUser) {
         // save to repository (only accessible during lifecycle)
-        this.user = User(registeredUser.username, registeredUser.email, registeredUser.preferences)
+        this.user = User(registeredUser.id, registeredUser.username, registeredUser.email, registeredUser.preferences)
         this.token = registeredUser.token
 
         // save to SharedPreferences
-        saveUser()
+        saveUser(false)
     }
 
     fun syncUserProfile() {
@@ -144,7 +167,7 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
     }
 
     // saves current user object to shared preferences and DB and syncs it to the backend
-    suspend fun saveUser() {
+    suspend fun saveUser(userChangedLocally: Boolean) {
         // shared preferences
         val moshi = Moshi.Builder().build()
         val adapter = moshi.adapter(User::class.java)
@@ -155,18 +178,24 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
         editor.putString("userToken", this.token)
         editor.apply()
 
-        // mark all preferences of the user as selected in the database
+        // save all preferences of the user to the database
+        for(preference in this.user!!.preferences) {
+            preferenceRepository.insert(preference)
+        }
+
+        // if user object was changed locally, sync back to server
+        if(userChangedLocally) {
+            iotRecApi.updateUserFromApp(this.user!!.id, this.user!!)
+        }
+
         //for(preference in this.user!!.preferences) {
         //    categoryRepository.setCategorySelected(preference, true)
         //}
-        Log.d(TAG, this.user!!.preferences.size.toString() + " - " + this.user!!.preferences.toString())
+        //Log.d(TAG, this.user!!.preferences.size.toString() + " - " + this.user!!.preferences.toString())
         // TODO don't do this
         //categoryRepository.setAllCategoriesSelectedFalse()
-        val rowsChanged = categoryRepository.setCategoriesSelectedTrue(this.user!!.preferences)
+        //val rowsChanged = categoryRepository.setCategoriesSelectedTrue(this.user!!.preferences)
         //Log.d(TAG, "rowsChanged: $rowsChanged")
-
-        // TODO right now, this is called after every signup/login => unnecessary
-        //iotRecApi.updateUserFromApp(this.user!!)
     }
 
     // TODO
@@ -177,21 +206,76 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
 
     //}
 
-    suspend fun removePreferenceFromAccount(category: Category) {
-        if(category.level > 0) {
-            this.user!!.preferences.remove(category.textId)
-            categoryRepository.setCategorySelected(category.textId, false)
-            saveUser()
+
+    suspend fun setPreference(preferenceId: String, value: Int) {
+        Log.d(TAG, "setPreference")
+        if(categoryRepository.getCategory(preferenceId).level > 1) {   // only lowest-level categories can be selected
+            val preference = Preference(preferenceId, value, this.user!!.id)
+            Log.d(TAG, preference.toString())
+
+            if(value == 0) {
+                Log.d(TAG, "value is 0")
+                Log.d(TAG, this.user!!.preferences.toString())
+
+                if(this.user!!.preferences.any { x -> x.category == preference.category }) {  // TODO does contain work with different values?
+                    val pref = this.user!!.preferences.find { x -> x.category == preference.category }
+
+                    Log.d(TAG, "Found existing pref")
+                    // if a pref has a value of 0 and has existed before, remove it
+                    val removedResult = this.user!!.preferences.remove(pref)
+                    Log.d(TAG, "Removed preference ($removedResult) - $pref")
+                    preferenceRepository.delete(preference.category)
+                    iotRecApi.deletePreference(this.user!!.id, preference.category)
+                } else {
+                    Log.d(TAG, "did not find existing pref")
+                }
+            } else {
+                Log.d(TAG, "value is non-zero")
+
+                if(this.user!!.preferences.any { x -> x.category == preference.category }) {
+                    Log.d(TAG, "Found existing pref $preference")
+
+                    // if a pref has values -1 or 1 and has existed before, update it
+                    val pref = this.user!!.preferences.find { x -> x.category == preference.category }
+                    pref!!.value = preference.value // TODO check if this works
+
+                    Log.d(TAG, this.user!!.id.toString())
+                    Log.d(TAG, pref.category)
+                    Log.d(TAG, pref.toString())
+
+                    iotRecApi.updatePreference(this.user!!.id, pref.category, pref)
+                } else {
+                    Log.d(TAG, "did not find existing pref")
+
+                    // if a pref has values -1 or 1 and has not existed before, create it
+                    this.user!!.preferences.add(preference)
+                    iotRecApi.addPreference(this.user!!.id, preference)
+                }
+            }
+
+            // update user profile in SharedPreferences and database, but don't sync to API (done separately above)
+            saveUser(false)
         }
     }
 
-    suspend fun addPreferenceToAccount(category: Category) {
-        if(category.level > 0) {
-            this.user!!.preferences.add(category.textId)
-            categoryRepository.setCategorySelected(category.textId, true)
-            saveUser()
+    /*
+    suspend fun removePreferenceFromAccount(preference: Preference) {
+        if(categoryRepository.getCategory(preference.id).level > 1) {   // only lowest-level categories can be selected
+            this.user!!.preferences.remove(preference)
+            preferenceRepository.delete(preference.id)
+            saveUser(true) // causes changes to be saved to DB and API
         }
     }
+
+    suspend fun addPreferenceToAccount(preference: Preference) {
+        if(categoryRepository.getCategory(preference.id).level > 1) {   // only lowest-level categories can be selected
+            this.user!!.preferences.add(preference)
+            //categoryRepository.setCategorySelected(category.textId, true)
+            saveUser(true) // causes changes to be saved to DB and API
+        }
+    }
+    */
+
 
     fun isLoggedIn(): Boolean {
         return this.user != null && this.user!!.username != null
