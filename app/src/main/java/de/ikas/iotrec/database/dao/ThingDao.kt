@@ -17,10 +17,10 @@ interface ThingDao {
     @Query("SELECT * from thing_table ORDER BY id ASC")
     fun getAllThings(): LiveData<List<Thing>>
 
-    @Query("SELECT * from thing_table WHERE inRange = 1")
+    @Query("SELECT * from thing_table WHERE inRange = 1 ORDER BY lastQueried DESC, distance ASC")
     fun getThingsInRange(): LiveData<List<Thing>>
 
-    @Query("SELECT * from thing_table WHERE inRange = 1")
+    @Query("SELECT * from thing_table WHERE inRange = 1 ORDER BY lastQueried DESC, distance ASC")
     fun getThingsInRangeList(): List<Thing>
 
     // TODO

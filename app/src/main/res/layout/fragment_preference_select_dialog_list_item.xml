@@ -10,53 +10,71 @@ android:background="?android:attr/selectableItemBackground"
 android:clickable="false"
 android:focusable="false">
 
-    <TextView
-            android:id="@+id/content"
-            android:layout_width="wrap_content"
+
+
+    <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/text_margin"
-            android:textAppearance="?attr/textAppearanceListItem"
-            tools:text="Category Name"
+            android:orientation="horizontal"
+            android:layout_marginRight="32dp"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/radio_group"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintBottom_toBottomOf="parent" >
+
+        <TextView
+                android:id="@+id/content"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/text_margin"
+                android:singleLine="false"
+                android:textAppearance="?attr/textAppearanceListItem"
+                tools:text="This is a very long category name" />
+
+    </LinearLayout>
 
     <RadioGroup
             android:id="@+id/radio_group"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginRight="8dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" >
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="8dp">
 
         <ToggleButton
                 android:id="@+id/button_negative"
                 android:layout_width="48dp"
                 android:layout_height="wrap_content"
-                android:text="–"
-                android:textOn="–"
-                android:textOff="–"
-                android:onClick="onPreferenceToggle" />
+                android:background="@drawable/iotrec_togglebutton_left_selector"
+                android:onClick="onPreferenceToggle"
+                android:text=""
+                android:textOff=""
+                android:textOn="" />
 
         <ToggleButton
                 android:id="@+id/button_neutral"
                 android:layout_width="48dp"
                 android:layout_height="wrap_content"
-                android:text="○"
-                android:textOn="○"
-                android:textOff="○"
-                android:textStyle="bold"
+                android:background="@drawable/iotrec_togglebutton_center_selector"
+                android:text=""
+                android:textOn=""
+                android:textOff=""
                 android:onClick="onPreferenceToggle" />
 
         <ToggleButton
                 android:id="@+id/button_positive"
                 android:layout_width="48dp"
                 android:layout_height="wrap_content"
-                android:text="+"
-                android:textOn="+"
-                android:textOff="+"
+                android:background="@drawable/iotrec_togglebutton_right_selector"
+                android:text=""
+                android:textOn=""
+                android:textOff=""
                 android:onClick="onPreferenceToggle" />
     </RadioGroup>
 

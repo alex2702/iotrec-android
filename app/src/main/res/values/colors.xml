@@ -1,7 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorPrimary">#4CAF50</color>
+    <color name="colorPrimaryDark">#087f23</color>
+    <color name="colorPrimaryLight">#80e27e</color>
+    <color name="colorSecondary">#FF9800</color>
+    <color name="colorSecondaryDark">#c66900</color>
+    <color name="colorSecondaryLight">#ffc947</color>
+
+    <color name="colorDarkGray">#333333</color>
     <color name="colorGrayLightest">#E0E0E0</color>
+
+    <color name="colorAccent">#FF9800</color>
+
+
+    <color name="togglebuttonBorderDark">#C1C1C1</color>
+    <color name="togglebuttonBorderLight">#EAEAEA</color>
+    <color name="togglebuttonColor">#FFFFFF</color>
+    <color name="togglebuttonColorPressed">#FF9800</color>
+
+    <color name="materialLightRed">#EF5350</color>
+    <color name="materialLightBlue">#4FC3F7</color>
+    <color name="materialLightOrange">#FF9800</color>
+    <color name="materialLightGreen">#43A047</color>
+    <color name="materialLightPurple">#BA68C8</color>
+    <color name="materialLightPink">#EC407A</color>
+    <color name="materialLightTeal">#009688</color>
 </resources>

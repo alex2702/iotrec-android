@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.ProgressBar
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -79,6 +80,8 @@ class PreferenceSelectDialogFragment : DialogFragment() {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_preference_select_dialog, container, false)
         val recyclerView = view.findViewById<RecyclerView>(R.id.dialog_preference_choice_list)
+        val loadingCircle = view.findViewById(R.id.loading) as ProgressBar
+        val closeButton = view.findViewById(R.id.dialog_preference_choice_close) as Button
 
         // Set the adapter
         if (recyclerView is RecyclerView) {
@@ -94,6 +97,8 @@ class PreferenceSelectDialogFragment : DialogFragment() {
                     // Update the cached copy of the categories in the adapter.
                     Log.d(TAG, "subCategories in observer: $subCategories")
                     subCategories?.let { (adapter as PreferenceDialogRecyclerViewAdapter).setSubCategories(it) }
+                    loadingCircle.visibility = View.GONE
+                    closeButton.visibility = View.VISIBLE
                 })
 
                 preferenceViewModel.preferences.observe(viewLifecycleOwner, Observer { preferences ->
@@ -108,7 +113,7 @@ class PreferenceSelectDialogFragment : DialogFragment() {
 
         // make dialog non-cancelable and set close button
         this.isCancelable = false
-        val closeButton = view.findViewById(R.id.dialog_preference_choice_close) as Button
+
         closeButton.setOnClickListener {
 
             // drop all changes

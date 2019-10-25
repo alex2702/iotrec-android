@@ -1,24 +1,29 @@
 package de.ikas.iotrec.preferences.ui
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.ikas.iotrec.R
 import de.ikas.iotrec.account.data.LoginRepository
+import de.ikas.iotrec.account.ui.LoginActivity
 import de.ikas.iotrec.app.IotRecApplication
 import de.ikas.iotrec.app.MainActivity
+import de.ikas.iotrec.app.ProfileFragment
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -42,7 +47,6 @@ class PreferenceListFragment : Fragment() {
     private val TAG = "PreferenceListFragment"
 
     private lateinit var mainActivity: MainActivity
-
     lateinit var app: IotRecApplication
 
     private lateinit var categoriesDao: CategoryDao
@@ -64,7 +68,6 @@ class PreferenceListFragment : Fragment() {
         Log.d(TAG, "onCreate")
 
         mainActivity = activity as MainActivity
-
         app = mainActivity.application as IotRecApplication
 
         loginRepository = app.loginRepository
@@ -119,6 +122,7 @@ class PreferenceListFragment : Fragment() {
         val recyclerView = view.findViewById<RecyclerView>(R.id.list)
         val notLoggedInText = view.findViewById<TextView>(R.id.categories_not_logged_in_text)
         val notLoggedInButton = view.findViewById<Button>(R.id.categories_not_logged_in_button)
+        val loadingCircle = view.findViewById(R.id.loading) as ProgressBar
 
         if(loginRepository.isLoggedIn()) {
             recyclerView.visibility = View.VISIBLE
@@ -128,10 +132,12 @@ class PreferenceListFragment : Fragment() {
             // Set the adapter
             if (recyclerView is RecyclerView) {
                 with(recyclerView) {
-                    layoutManager = when {
-                        columnCount <= 1 -> LinearLayoutManager(context)
-                        else -> GridLayoutManager(context, columnCount)
-                    }
+                    //layoutManager = when {
+                    //    columnCount <= 1 -> LinearLayoutManager(context)
+                    //    else -> GridLayoutManager(context, columnCount)
+                    //}
+
+                    layoutManager = LinearLayoutManager(context)
 
                     adapter = PreferenceRecyclerViewAdapter(context, listener)
 
@@ -149,17 +155,36 @@ class PreferenceListFragment : Fragment() {
                                 (adapter as PreferenceRecyclerViewAdapter).setTopLevelCategories(
                                     it
                                 )
+                                loadingCircle.visibility = View.GONE
                             }
                         }
                     )
+
+                    val dividerItemDecoration = DividerItemDecoration(
+                        recyclerView.context,
+                        (layoutManager as LinearLayoutManager).orientation
+                    )
+                    recyclerView.addItemDecoration(dividerItemDecoration)
                 }
             }
 
             return view
         } else {
+            loadingCircle.visibility = View.GONE
             recyclerView.visibility = View.GONE
             notLoggedInText.visibility = View.VISIBLE
             notLoggedInButton.visibility = View.VISIBLE
+
+            notLoggedInButton.setOnClickListener {
+                // move to profile fragment
+                activity!!.supportFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, ProfileFragment(), tag)
+                    .commit()
+                // start login activity
+                val intent = Intent(activity, LoginActivity::class.java)
+                startActivity(intent)
+            }
 
             return view
         }

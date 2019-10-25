@@ -7,7 +7,7 @@ android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "de.ikas.iotrec"
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -61,4 +61,7 @@ dependencies {
     kapt 'androidx.lifecycle:lifecycle-compiler:2.1.0-beta01'
     implementation 'com.squareup.moshi:moshi-adapters:1.8.0'
     implementation("com.squareup.moshi:moshi-kotlin:1.8.0")
+    implementation "com.mikepenz:iconics-core:4.0.1"
+    implementation "com.mikepenz:iconics-views:4.0.1"
+    implementation 'com.mikepenz:google-material-typeface:3.0.1.4.original-kotlin@aar'
 }

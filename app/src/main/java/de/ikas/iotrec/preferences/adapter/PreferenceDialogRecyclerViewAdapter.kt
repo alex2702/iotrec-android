@@ -1,24 +1,25 @@
 package de.ikas.iotrec.preferences.adapter
 
 import android.content.Context
+import android.graphics.Color
+import android.text.style.BackgroundColorSpan
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import de.ikas.iotrec.database.model.Category
 import android.widget.TextView
-import android.graphics.Color
-import android.provider.Settings
 import android.view.LayoutInflater
 import android.widget.RadioGroup
 import android.widget.ToggleButton
 import androidx.recyclerview.widget.RecyclerView
+import com.mikepenz.iconics.Iconics
+import com.mikepenz.iconics.typeface.library.googlematerial.GoogleMaterial
 import de.ikas.iotrec.R
 import de.ikas.iotrec.app.IotRecApplication
 import de.ikas.iotrec.database.model.Preference
 import de.ikas.iotrec.preferences.ui.PreferenceSelectDialogFragment
 import kotlinx.coroutines.*
-
-
+import java.security.AccessController.getContext
 
 
 class PreferenceDialogRecyclerViewAdapter internal constructor(

@@ -36,6 +36,13 @@ import android.view.View
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import de.ikas.iotrec.database.model.Preference
+import de.ikas.iotrec.database.repository.PreferenceRepository
+import android.bluetooth.BluetoothAdapter
+import androidx.core.app.ComponentActivity.ExtraData
+import androidx.core.content.ContextCompat.getSystemService
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+
+
 
 class MainActivity :
     AppCompatActivity(),
@@ -44,7 +51,6 @@ class MainActivity :
     ProfileFragment.OnFragmentInteractionListener,
     PreferenceSelectDialogFragment.OnFragmentInteractionListener {
 
-    private lateinit var textMessage: TextView
     //private lateinit var notificationHelper: NotificationHelper
     //private var backgroundPowerSaver: BackgroundPowerSaver? = null
     //private lateinit var application: IotRecApplication //Monitoring
@@ -61,7 +67,9 @@ class MainActivity :
 
     private lateinit var categoryViewModel: PreferenceViewModel
     private lateinit var categoriesDao: CategoryDao
-    private lateinit var categoryRepository: CategoryRepository
+    lateinit var categoryRepository: CategoryRepository
+
+    lateinit var preferenceRepository: PreferenceRepository
 
     lateinit var loginRepository: LoginRepository
     lateinit var userPreferences: MutableList<Preference>
@@ -87,13 +95,11 @@ class MainActivity :
         when (item.itemId) {
             R.id.navigation_things -> {
                 setTitle(R.string.title_things)
-                textMessage.setText(R.string.title_things)
                 loadFragment(item.itemId)
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_preferences -> {
                 setTitle(R.string.title_preferences)
-                textMessage.setText(R.string.title_preferences)
                 loadFragment(item.itemId)
                 return@OnNavigationItemSelectedListener true
             }
@@ -121,12 +127,12 @@ class MainActivity :
 
                 // show ProfileFragment
                 setTitle(R.string.title_profile)
-                textMessage.setText(R.string.title_profile)
                 loadFragment(item.itemId)
 
                 if (token == "") {
                     // if user is not logged in, show LoginActivity on top
                     // TODO do I want this?
+                    loginRepository.logout()
                     val intent = Intent(this, LoginActivity::class.java)
                     //startActivityForResult(intent, START_LOGIN_ACTIVITY_REQUEST_CODE)
                     startActivity(intent)
@@ -154,7 +160,6 @@ class MainActivity :
 
         setContentView(R.layout.activity_main)
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
-        textMessage = findViewById(R.id.message)
         navView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener)
 
         //supportFragmentManager.beginTransaction().add(profileFragment, "4").hide(profileFragment).commit()
@@ -277,6 +282,8 @@ class MainActivity :
         categoryViewModel = ViewModelProviders.of(this).get(PreferenceViewModel::class.java)
         categoriesDao = IotRecDatabase.getDatabase(this, GlobalScope).categoryDao()
         categoryRepository = CategoryRepository(categoriesDao)
+
+        preferenceRepository = app.preferenceRepository
     }
 
     override fun onRequestPermissionsResult(requestCode: Int,
@@ -335,7 +342,7 @@ class MainActivity :
 
         var fragment = supportFragmentManager.findFragmentByTag(tag) ?: when (itemId) {
             R.id.navigation_things -> {
-                ThingListFragment.newInstance(1)
+                ThingListFragment.newInstance()
             }
             R.id.navigation_preferences -> {
                 PreferenceListFragment.newInstance(1)

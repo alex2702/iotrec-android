@@ -4,7 +4,6 @@ import de.ikas.iotrec.account.data.model.LoggedInUser
 import de.ikas.iotrec.account.data.model.RegisteredUser
 import de.ikas.iotrec.account.data.model.User
 import de.ikas.iotrec.database.model.*
-import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.*
 
