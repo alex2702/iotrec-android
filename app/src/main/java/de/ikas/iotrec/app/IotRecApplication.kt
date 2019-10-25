@@ -4,6 +4,7 @@ import android.Manifest
 import android.util.Log
 import android.content.Intent
 import android.app.*
+import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.os.Build
 import androidx.core.app.NotificationCompat
@@ -30,8 +31,11 @@ import kotlinx.coroutines.launch
 import java.util.*
 import androidx.core.content.ContextCompat.getSystemService
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import android.location.LocationManager
+import com.mikepenz.iconics.Iconics
 import de.ikas.iotrec.database.dao.*
 import de.ikas.iotrec.database.repository.*
+import de.ikas.iotrec.network.OpenWeatherApiInit
 
 
 class IotRecApplication : Application(), BeaconConsumer {
@@ -45,6 +49,8 @@ class IotRecApplication : Application(), BeaconConsumer {
     //private val applicationScope = CoroutineScope(Dispatchers.Main + applicationJob)
 
     private lateinit var beaconManager: BeaconManager
+    var bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+    lateinit var locationManager: LocationManager
 
     val iotRecApi = IotRecApiInit(this)
     lateinit var loginRepository: LoginRepository
@@ -67,7 +73,7 @@ class IotRecApplication : Application(), BeaconConsumer {
     //private lateinit var ratingDao: RatingDao
     //lateinit var ratingRepository: RatingRepository
 
-
+    val openWeatherApi = OpenWeatherApiInit(this)
 
     // user management
     //public var user: User? = null
@@ -112,7 +118,11 @@ class IotRecApplication : Application(), BeaconConsumer {
             loginRepository.syncUserProfile()
         }
 
+        locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
         prepareBluetoothScanning()
+
+        Iconics.init(applicationContext)
     }
 
     fun prepareBluetoothScanning() {

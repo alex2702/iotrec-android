@@ -22,4 +22,7 @@ interface PreferenceDao {
 
     @Query("SELECT COUNT(*) FROM preference_table WHERE category IN (SELECT textId FROM category_table WHERE parentTextId = :categoryId)")
     fun getNumberOfPreferences(categoryId: String): Int
+
+    @Query("SELECT * FROM preference_table")
+    fun getCurrentPreferences(): LiveData<List<Preference>>
 }

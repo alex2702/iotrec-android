@@ -1,17 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.recyclerview.widget.RecyclerView
+<androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/thing_list"
         android:name="de.ikas.iotrec.bluetooth.ui.ThingListFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="0dp"
-        android:layout_marginRight="0dp"
-        app:layoutManager="LinearLayoutManager"
         tools:context=".bluetooth.ui.ThingListFragment"
-        tools:listitem="@layout/fragment_thing_list_item"
-        android:descendantFocusability="blocksDescendants">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-</androidx.recyclerview.widget.RecyclerView>
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="0dp"
+                android:layout_marginRight="0dp"
+                tools:listitem="@layout/fragment_thing_list_item"
+                android:descendantFocusability="blocksDescendants"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+        <ProgressBar
+                android:id="@+id/loading"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="64dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginBottom="64dp"
+                android:visibility="visible"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="32dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                        android:id="@+id/bluetooth_not_enabled"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-light"
+                        android:gravity="center"
+                        android:text="Bluetooth is currently not enabled. The app requires an active Bluetooth stack in order to scan for beacons."
+                        android:textSize="18sp"
+                        android:visibility="gone"
+                        tools:visibility="visible"/>
+
+                <Button
+                        android:id="@+id/enable_bluetooth"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Enable Bluetooth"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+
+                <TextView
+                        android:id="@+id/location_not_enabled"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-light"
+                        android:gravity="center"
+                        android:text="Location Services are currently not enabled. The app requires Location Services in order to scan for beacons."
+                        android:textSize="18sp"
+                        android:visibility="gone"
+                        tools:visibility="visible"
+                        android:layout_marginTop="40dp" />
+
+                <Button
+                        android:id="@+id/enable_location"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Enable Location Services"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+
+        </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

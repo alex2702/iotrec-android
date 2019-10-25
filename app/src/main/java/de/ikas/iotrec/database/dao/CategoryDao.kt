@@ -14,6 +14,9 @@ interface CategoryDao {
     @Query("SELECT * from category_table ORDER BY textId ASC")
     fun getAllCategories(): LiveData<List<Category>>
 
+    @Query("SELECT * from category_table WHERE textId IN (:ids) ORDER BY textId ASC")
+    fun getCategories(ids: List<String>): List<Category>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(category: Category)
 

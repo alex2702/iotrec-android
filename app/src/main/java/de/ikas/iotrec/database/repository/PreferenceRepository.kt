@@ -40,4 +40,9 @@ class PreferenceRepository(private val preferenceDao: PreferenceDao, private val
     fun getNumberOfPreferences(categoryId: String): Int {
         return preferenceDao.getNumberOfPreferences(categoryId)
     }
+
+    @WorkerThread
+    fun getCurrentPreferences(): LiveData<List<Preference>> {
+        return preferenceDao.getCurrentPreferences()
+    }
 }

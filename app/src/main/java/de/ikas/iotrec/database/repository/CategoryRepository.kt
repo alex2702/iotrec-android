@@ -34,8 +34,13 @@ class CategoryRepository(private val categoryDao: CategoryDao) {
     }
 
     @WorkerThread
-    suspend fun getCategory(id: String): Category{
+    suspend fun getCategory(id: String): Category {
         return categoryDao.getCategory(id)
+    }
+
+    @WorkerThread
+    suspend fun getCategories(ids: List<String>): List<Category> {
+        return categoryDao.getCategories(ids)
     }
 
     @WorkerThread

@@ -3,24 +3,17 @@
 
     <item
             android:id="@+id/navigation_things"
-            android:icon="@drawable/ic_home_black_24dp"
+            android:icon="@drawable/ic_wifi_tethering_black_24dp"
             android:title="@string/title_things"/>
 
     <item
             android:id="@+id/navigation_preferences"
-            android:icon="@drawable/ic_dashboard_black_24dp"
+            android:icon="@drawable/ic_favorite_black_24dp"
             android:title="@string/title_preferences"/>
-
-    <!--
-    <item
-            android:id="@+id/navigation_settings"
-            android:icon="@drawable/ic_notifications_black_24dp"
-            android:title="@string/title_settings"/>
-    -->
 
     <item
             android:id="@+id/navigation_profile"
-            android:icon="@drawable/ic_notifications_black_24dp"
+            android:icon="@drawable/ic_person_black_24dp"
             android:title="@string/title_profile"/>
 
 </menu>

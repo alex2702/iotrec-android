@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
             android:name=".app.IotRecApplication"
@@ -19,19 +20,17 @@
             android:theme="@style/AppTheme"
             android:usesCleartextTraffic="true"
             tools:ignore="GoogleAppIndexingWarning">
+
         <service
                 android:name=".bluetooth.service.RecommendationCheckerService"
                 android:enabled="true"
-                android:exported="true"></service>
+                android:exported="true" />
 
         <activity
                 android:name=".app.MainActivity"
                 android:label="@string/app_name">
-
-            <!-- android:launchMode="singleInstance" -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -43,7 +42,7 @@
                     android:name="android.support.PARENT_ACTIVITY"
                     android:value="de.ikas.iotrec.app.MainActivity" />
         </activity>
-        <activity android:name=".recommendation.RecommendationActivity"></activity>
+        <activity android:name=".recommendation.RecommendationActivity" />
         <!--
 <service
                 android:name=".bluetooth.service.BluetoothScannerService"
