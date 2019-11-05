@@ -1,0 +1,744 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/container"
+        tools:context=".experiment.ExperimentFragment"
+        android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="0dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/select_preferences"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Before starting the experiment, please choose some preferences first."
+                        android:fontFamily="sans-serif-light"
+                        android:textAlignment="center"
+                        android:textSize="18sp"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp"
+                        android:layout_marginBottom="32dp" />
+
+                <Button
+                        android:id="@+id/select_preferences_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="OK, Let's Go!" />
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/start_scenario"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="The experiment consists of two scenarios."
+                        android:fontFamily="sans-serif-light"
+                        android:textAlignment="center"
+                        android:textSize="18sp"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp"
+                        android:layout_marginBottom="32dp" />
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Your first scenario will be:"
+                        android:fontFamily="sans-serif-light"
+                        android:textAlignment="center"
+                        android:textSize="18sp"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp"
+                        android:layout_marginBottom="32dp" />
+
+                <TextView
+                        android:id="@+id/start_scenario_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp"
+                        android:layout_marginBottom="32dp"
+                        tools:background="@drawable/border_radius_green"
+                        android:padding="12dp"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="18sp"
+                        tools:text="Job Fair" />
+
+                <Button
+                        android:id="@+id/start_scenario_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Start Scenario" />
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/start_test_run"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                        android:id="@+id/start_test_run_body"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="You are now ready to start test run n out of m in the x scenario."
+                        android:fontFamily="sans-serif-light"
+                        android:textAlignment="center"
+                        android:textSize="18sp"
+                        android:layout_marginStart="48dp"
+                        android:layout_marginEnd="48dp"
+                        android:layout_marginBottom="32dp" />
+
+                <Button
+                        android:id="@+id/start_test_run_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Start Test Run n" />
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/perform_test_run"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp"
+                        android:layout_marginBottom="8dp"
+                        android:fontFamily="sans-serif-light"
+                        android:text="CURRENT TEST RUN"
+                        android:textAlignment="center"
+                        android:textSize="24sp" />
+
+                <TextView
+                        android:id="@+id/perform_test_run_counter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp"
+                        android:layout_marginBottom="12dp"
+                        android:fontFamily="sans-serif-light"
+                        android:textAlignment="center"
+                        android:textSize="48sp"
+                        tools:text="1/4" />
+
+                <TextView
+                        android:id="@+id/perform_test_run_scenario"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp"
+                        android:layout_marginBottom="16dp"
+                        android:padding="12dp"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="18sp"
+                        tools:background="@drawable/border_radius_green"
+                        tools:text="Job Fair" />
+
+                <androidx.cardview.widget.CardView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp">
+
+                    <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                        <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="16dp"
+                                android:fontFamily="sans-serif"
+                                android:text="YOUR CONTEXT IN THIS RUN"
+                                android:textAlignment="center"
+                                android:textSize="18sp" />
+
+                        <TextView
+                                android:id="@+id/perform_test_run_weather"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="4dp"
+                                android:fontFamily="sans-serif-light"
+                                android:textAlignment="center"
+                                android:textSize="18sp"
+                                tools:text="Sunny" />
+
+                        <TextView
+                                android:id="@+id/perform_test_run_temp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="4dp"
+                                android:fontFamily="sans-serif-light"
+                                android:textAlignment="center"
+                                android:textSize="18sp"
+                                tools:text="29 degrees" />
+
+                        <TextView
+                                android:id="@+id/perform_test_run_tod"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="4dp"
+                                android:fontFamily="sans-serif-light"
+                                android:textAlignment="center"
+                                android:textSize="18sp"
+                                tools:text="Late Afternoon" />
+
+                        <TextView
+                                android:id="@+id/perform_test_run_lot"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="sans-serif-light"
+                                android:textAlignment="center"
+                                android:textSize="18sp"
+                                tools:text="You've been on the move for 3 hours." />
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginEnd="32dp"
+                        android:layout_marginBottom="16dp"
+                        android:fontFamily="sans-serif-light"
+                        android:text="Look around and find some interesting things! When you've had enough, finish the test run."
+                        android:textAlignment="center"
+                        android:textSize="18sp" />
+
+                <Button
+                        android:id="@+id/perform_test_run_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="End This Test Run" />
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/rate_test_run"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
+
+            <TextView
+                    android:id="@+id/rate_test_run_body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-light"
+                    android:padding="32dp"
+                    android:text="In order to finish the test run, please fill out the questionnaire."
+                    android:textAlignment="center"
+                    android:textSize="18sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            <View
+                    android:id="@+id/rate_test_run_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@android:color/darker_gray"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/rate_test_run_body" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rate_test_run_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/rate_test_run_border"
+                    tools:listitem="@layout/experiment_list_item" />
+
+            <!--<Button
+                    android:id="@+id/rate_test_run_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Submit"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />-->
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/start_scenario_2"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Thank you for completing"
+                        android:fontFamily="sans-serif-light"
+                        android:textAlignment="center"
+                        android:textSize="18sp"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp"
+                        android:layout_marginBottom="16dp" />
+
+                <TextView
+                        android:id="@+id/start_scenario_2_completed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp"
+                        android:layout_marginBottom="48dp"
+                        tools:background="@drawable/border_radius_green"
+                        android:padding="12dp"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="18sp"
+                        tools:text="Job Fair" />
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Your second scenarios is"
+                        android:fontFamily="sans-serif-light"
+                        android:textAlignment="center"
+                        android:textSize="18sp"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp"
+                        android:layout_marginBottom="16dp" />
+
+                <TextView
+                        android:id="@+id/start_scenario_2_next"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp"
+                        android:layout_marginBottom="48dp"
+                        tools:background="@drawable/border_radius_red"
+                        android:padding="12dp"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="18sp"
+                        tools:text="Museum" />
+
+                <Button
+                        android:id="@+id/start_scenario_2_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Start Next Scenario" />
+
+            </LinearLayout>
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/fill_questionnaire"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
+
+            <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Thank you for completing"
+                            android:fontFamily="sans-serif-light"
+                            android:textAlignment="center"
+                            android:textSize="18sp"
+                            android:layout_marginTop="32dp"
+                            android:layout_marginStart="32dp"
+                            android:layout_marginEnd="32dp"
+                            android:layout_marginBottom="16dp" />
+
+                    <TextView
+                            android:id="@+id/fill_questionnaire_completed"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="32dp"
+                            android:layout_marginEnd="32dp"
+                            android:layout_marginBottom="48dp"
+                            tools:background="@drawable/border_radius_red"
+                            android:padding="12dp"
+                            android:textAlignment="center"
+                            android:textColor="@color/colorWhite"
+                            android:textSize="18sp"
+                            tools:text="Museum" />
+
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Before finishing the experiment, please answer a few final questions."
+                            android:fontFamily="sans-serif-light"
+                            android:textAlignment="center"
+                            android:textSize="18sp"
+                            android:layout_marginStart="32dp"
+                            android:layout_marginEnd="32dp"
+                            android:layout_marginBottom="32dp" />
+
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="How old are you?"
+                            android:fontFamily="sans-serif-light"
+                            android:textAlignment="center"
+                            android:textSize="18sp"
+                            android:layout_marginStart="32dp"
+                            android:layout_marginEnd="32dp"
+                            android:layout_marginBottom="16dp" />
+
+                    <RadioGroup
+                            android:id="@+id/fill_questionnaire_age"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="48dp" >
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_age_18"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="younger than 18 years" />
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_age_24"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="18-24 years" />
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_age_29"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="25-29 years" />
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_age_39"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="30-39 years" />
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_age_49"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="40-49 years" />
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_age_59"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="50-59 years" />
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_age_60"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="older than 60 years" />
+                    </RadioGroup>
+
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Which gender do you identify most with?"
+                            android:fontFamily="sans-serif-light"
+                            android:textAlignment="center"
+                            android:textSize="18sp"
+                            android:layout_marginStart="32dp"
+                            android:layout_marginEnd="32dp"
+                            android:layout_marginBottom="16dp" />
+
+                    <RadioGroup
+                            android:id="@+id/fill_questionnaire_gender"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="48dp" >
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_gender_male"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Male" />
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_gender_female"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Female" />
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_gender_other"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Not listed" />
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_gender_none"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="I'd rather not say" />
+
+                    </RadioGroup>
+
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="What is your highest level of formal education?"
+                            android:fontFamily="sans-serif-light"
+                            android:textAlignment="center"
+                            android:textSize="18sp"
+                            android:layout_marginStart="32dp"
+                            android:layout_marginEnd="32dp"
+                            android:layout_marginBottom="16dp" />
+
+                    <RadioGroup
+                            android:id="@+id/fill_questionnaire_qualification"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="48dp" >
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_qualification_hs"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="High School" />
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_qualification_vt"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Vocational Training" />
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_qualification_bd"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Bachelor's degree" />
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_qualification_md"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Master's degree/Diplom" />
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_qualification_phd"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Doctorate" />
+                    </RadioGroup>
+
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Do you own a smartphone and if yes, what is your average usage time per day?"
+                            android:fontFamily="sans-serif-light"
+                            android:textAlignment="center"
+                            android:textSize="18sp"
+                            android:layout_marginStart="32dp"
+                            android:layout_marginEnd="32dp"
+                            android:layout_marginBottom="16dp" />
+
+                    <RadioGroup
+                            android:id="@+id/fill_questionnaire_usage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="48dp" >
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_usage_1"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="less than an hour" />
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_usage_2"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="between 1 and 2 hours" />
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_usage_3"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="between 2 and 4 hours" />
+
+                        <RadioButton
+                                android:id="@+id/fill_questionnaire_usage_4"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="more than 4 hours" />
+
+                    </RadioGroup>
+
+                    <Button
+                            android:id="@+id/fill_questionnaire_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Submit and Finish Study"
+                            android:layout_marginBottom="32dp"
+                            android:enabled="false" />
+
+                </LinearLayout>
+
+            </ScrollView>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/thank_you"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Thank you very much for participating!"
+                        android:fontFamily="sans-serif-light"
+                        android:textAlignment="center"
+                        android:textSize="18sp"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp" />
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/please_log_in"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Please log in to participate in the experiment."
+                        android:fontFamily="sans-serif-light"
+                        android:textAlignment="center"
+                        android:textSize="18sp"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp" />
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

@@ -8,6 +8,7 @@ import de.ikas.iotrec.database.model.Recommendation
 import de.ikas.iotrec.network.json.CategoryJson
 import de.ikas.iotrec.network.json.PreferenceJson
 import de.ikas.iotrec.network.json.RecommendationJson
+import de.ikas.iotrec.network.model.Context
 
 
 internal class RecommendationJsonAdapter {
@@ -17,7 +18,10 @@ internal class RecommendationJsonAdapter {
             recommendationJson.id,
             recommendationJson.thing,
             recommendationJson.score,
-            recommendationJson.invokeRec
+            recommendationJson.invoke_rec,
+            recommendationJson.context.temperature_raw,
+            recommendationJson.context.weather_raw,
+            recommendationJson.context.length_of_trip_raw
         )
         return recommendation
     }
@@ -28,7 +32,14 @@ internal class RecommendationJsonAdapter {
             recommendation.id,
             recommendation.thing,
             recommendation.score,
-            recommendation.invokeRec
+            recommendation.invokeRec,
+            Context(
+                recommendation.context_temperature_raw,
+                recommendation.context_weather_raw,
+                recommendation.context_length_of_trip_raw,
+                null,
+                null
+            )
         )
         return json
     }

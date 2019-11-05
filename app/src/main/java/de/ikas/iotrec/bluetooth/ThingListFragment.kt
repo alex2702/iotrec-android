@@ -1,4 +1,4 @@
-package de.ikas.iotrec.bluetooth.ui
+package de.ikas.iotrec.bluetooth
 
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
@@ -10,29 +10,20 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
 import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.ikas.iotrec.R
 import de.ikas.iotrec.app.MainActivity
 import de.ikas.iotrec.database.model.Thing
-import java.util.logging.Level
-import java.util.logging.Logger
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.ikas.iotrec.app.IotRecApplication
-import android.provider.Settings.SettingNotFoundException
-import android.provider.Settings.Secure
-import android.provider.Settings.Secure.LOCATION_MODE
 import android.provider.Settings
 import android.widget.Button
 import android.widget.TextView
-import de.ikas.iotrec.account.ui.LoginActivity
-import de.ikas.iotrec.app.ProfileFragment
 import java.lang.Exception
 
 

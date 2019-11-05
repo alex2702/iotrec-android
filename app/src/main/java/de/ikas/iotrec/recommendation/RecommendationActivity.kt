@@ -1,24 +1,29 @@
 package de.ikas.iotrec.recommendation
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.view.Window
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.LiveData
+import com.squareup.picasso.Picasso
 import de.ikas.iotrec.R
 import de.ikas.iotrec.app.IotRecApplication
 import de.ikas.iotrec.database.model.Feedback
 import de.ikas.iotrec.database.model.Recommendation
 import de.ikas.iotrec.database.model.Thing
 import de.ikas.iotrec.database.repository.ThingRepository
-import de.ikas.iotrec.extensions.hideKeyboard
+import de.ikas.iotrec.network.model.AnalyticsEvent
+import de.ikas.iotrec.rating.RatingAlarmReceiver
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.util.*
+import kotlin.random.Random
 
 class RecommendationActivity : AppCompatActivity() {
 
@@ -51,17 +56,6 @@ class RecommendationActivity : AppCompatActivity() {
         val recommendationBundle = intent.getBundleExtra("recommendationBundle")
         val recommendation: Recommendation = recommendationBundle.getParcelable("recommendation") as Recommendation
 
-        /*
-        var thingInDatabase: LiveData<Thing>
-        GlobalScope.launch {
-            thingInDatabase = thingRepository.getThingLive(thing.id)
-        }
-
-        thingInDatabase.observe(this, Observer { user: User? ->
-
-        });
-        */
-
         val thingImage: ImageView = findViewById(R.id.thing_image)
         val thingTitle: TextView = findViewById(R.id.thing_title)
         val thingDescription: TextView = findViewById(R.id.thing_description)
@@ -69,11 +63,15 @@ class RecommendationActivity : AppCompatActivity() {
 
         val acceptButton = findViewById<Button>(R.id.reco_accept)
         val rejectButton = findViewById<Button>(R.id.reco_reject)
+        val explanationButton = findViewById<Button>(R.id.button_explanation)
 
         thingTitle.text = thing.title
         thingDescription.text = thing.description
         thingDistance.text = "%.2f".format(thing.distance)
 
+        if(thing.image != "") {
+            Picasso.get().load(thing.image).into(thingImage)
+        }
 
         acceptButton.setOnClickListener {
             val bareFeedback = Feedback("", 1, recommendation.id)
@@ -82,18 +80,30 @@ class RecommendationActivity : AppCompatActivity() {
                 // create feedback object
                 try {
                     val result = app.iotRecApi.createFeedback(recommendation.id, bareFeedback)
-
                     Log.d(TAG, result.toString())
 
                     if (result.isSuccessful) {
+                        // schedule the Rating notification
+                        scheduleRatingNotification(result.body()!!, recommendation, thing)
+
+                        runOnUiThread {
+                            Toast.makeText(
+                                this@RecommendationActivity,
+                                "Have fun!",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+
                         // end activity
                         finish()
                     } else {
-                        Toast.makeText(
-                            this@RecommendationActivity,
-                            "Could not send feedback: ${result.message()}",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        runOnUiThread {
+                            Toast.makeText(
+                                this@RecommendationActivity,
+                                "Could not send feedback: ${result.message()}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 } catch (e: Throwable) {
                     Log.d(TAG, e.toString())
@@ -103,22 +113,54 @@ class RecommendationActivity : AppCompatActivity() {
 
         rejectButton.setOnClickListener {
             val bareFeedback = Feedback("", -1, recommendation.id)
-            Log.d(TAG, bareFeedback.toString())
 
             GlobalScope.launch {
                 // create feedback object
                 try {
                     val result = app.iotRecApi.createFeedback(recommendation.id, bareFeedback)
-
                     Log.d(TAG, result.toString())
 
                     if (result.isSuccessful) {
+                        // schedule the Rating notification
+                        scheduleRatingNotification(result.body()!!, recommendation, thing)
+
+                        runOnUiThread {
+                            Toast.makeText(
+                                this@RecommendationActivity,
+                                "Maybe later...",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+
                         // end activity
                         finish()
                     } else {
+                        runOnUiThread {
+                            Toast.makeText(
+                                this@RecommendationActivity,
+                                "Could not send feedback: ${result.message()}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                } catch (e: Throwable) {
+                    Log.d(TAG, e.toString())
+                }
+            }
+        }
+
+        explanationButton.setOnClickListener {
+            val analyticsEvent = AnalyticsEvent("RECO_EXPL", recommendation.id, thing.id, 0f)
+
+            GlobalScope.launch {
+                // create analytics object
+                try {
+                    val result = app.iotRecApi.createAnalyticsEvent(analyticsEvent)
+
+                    runOnUiThread {
                         Toast.makeText(
                             this@RecommendationActivity,
-                            "Could not send feedback: ${result.message()}",
+                            "Sorry, I can't tell you yet.",
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -127,5 +169,30 @@ class RecommendationActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun scheduleRatingNotification(feedback: Feedback, recommendation: Recommendation, thing: Thing) {
+        // get notification time (5 minutes from now)
+        val notificationTime = Calendar.getInstance().timeInMillis + 1 * 60 * 1000  // shortened to 1 min for the user study
+
+        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+
+        val alarmIntent = Intent(applicationContext, RatingAlarmReceiver::class.java)
+        alarmIntent.putExtra("notificationTime", notificationTime)
+
+        val thingBundle = Bundle()
+        thingBundle.putParcelable("thing", thing)
+        alarmIntent.putExtra("thing", thingBundle)
+
+        val feedbackBundle = Bundle()
+        feedbackBundle.putParcelable("feedback", feedback)
+        alarmIntent.putExtra("feedback", feedbackBundle)
+
+        val recommendationBundle = Bundle()
+        recommendationBundle.putParcelable("recommendation", recommendation)
+        alarmIntent.putExtra("recommendation", recommendationBundle)
+
+        val pendingIntent = PendingIntent.getBroadcast(this, Random.nextInt(10000000), alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT)
+        alarmManager.set(AlarmManager.RTC_WAKEUP, notificationTime, pendingIntent)
     }
 }

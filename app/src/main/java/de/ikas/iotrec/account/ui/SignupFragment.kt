@@ -2,6 +2,8 @@ package de.ikas.iotrec.account.ui
 
 import android.app.Activity
 import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.preference.PreferenceManager
@@ -15,15 +17,13 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 
 import de.ikas.iotrec.R
+import de.ikas.iotrec.app.ProfileFragment
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
@@ -36,20 +36,12 @@ private const val ARG_PARAM2 = "param2"
  */
 class SignupFragment : Fragment() {
 
-    //private var param1: String? = null
-    //private var param2: String? = null
     private var listener: OnFragmentInteractionListener? = null
 
     private lateinit var signupViewModel: LoginViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        /*
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-        */
     }
 
     override fun onCreateView(
@@ -106,7 +98,9 @@ class SignupFragment : Fragment() {
                 //editor.putString("user.email", signupResult.success.email)
                 editor.apply()
 
-                activity!!.setResult(Activity.RESULT_OK)
+                val intent = Intent()
+                intent.putExtra("ACTION", "signup")
+                activity!!.setResult(Activity.RESULT_OK, intent)
 
                 //Complete and destroy login activity once successful
                 activity!!.finish()
@@ -181,13 +175,6 @@ class SignupFragment : Fragment() {
         return view
     }
 
-    /*
-    // TODO: Rename method, update argument and hook method into UI event
-    fun onButtonPressed(uri: Uri) {
-        listener?.onFragmentInteraction(uri)
-    }
-    */
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is OnFragmentInteractionListener) {
@@ -206,7 +193,6 @@ class SignupFragment : Fragment() {
         val welcome = getString(R.string.welcome)
         val username = model.username
 
-        // TODO : initiate successful signed up experience
         Toast.makeText(
             activity,
             "$welcome $username",
@@ -230,7 +216,6 @@ class SignupFragment : Fragment() {
      * for more information.
      */
     interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         fun onFragmentInteraction(uri: Uri)
     }
 
@@ -243,13 +228,10 @@ class SignupFragment : Fragment() {
          * @param param2 Parameter 2.
          * @return A new instance of fragment SignupFragment.
          */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
             SignupFragment().apply {
                 arguments = Bundle().apply {
-                    //putString(ARG_PARAM1, param1)
-                    //putString(ARG_PARAM2, param2)
                 }
             }
     }

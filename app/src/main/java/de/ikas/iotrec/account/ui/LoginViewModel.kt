@@ -112,7 +112,6 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
         }
     }
 
-    //TODO enforce my own rules
     private fun isUserNameValid(username: String): Boolean {
         return username.isNotBlank()
     }
@@ -125,7 +124,6 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
         }
     }
 
-    //TODO enforce my own rules
     private fun isPasswordValid(password: String): Boolean {
         return password.length > 1
     }

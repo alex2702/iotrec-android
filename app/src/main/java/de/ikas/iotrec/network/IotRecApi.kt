@@ -4,6 +4,8 @@ import de.ikas.iotrec.account.data.model.LoggedInUser
 import de.ikas.iotrec.account.data.model.RegisteredUser
 import de.ikas.iotrec.account.data.model.User
 import de.ikas.iotrec.database.model.*
+import de.ikas.iotrec.network.model.AnalyticsEvent
+import de.ikas.iotrec.network.model.Questionnaire
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -29,10 +31,6 @@ interface IotRecApi {
         @Path("userId") userId: Int,
         @Body user: User
     ): Response<User>
-
-    // TODO
-    //suspend fun updateUserToApp(
-    //)
 
     @GET("things/{id}/")
     suspend fun getThing(
@@ -77,4 +75,35 @@ interface IotRecApi {
         @Path("recommendationId") recommendationId: String,
         @Body feedback: Feedback
     ): Response<Feedback>
+
+    @POST("recommendations/{recommendationId}/rating/")
+    suspend fun createRating(
+        @Path("recommendationId") recommendationId: String,
+        @Body rating: Rating
+    ): Response<Rating>
+
+    @POST("analytics/")
+    suspend fun createAnalyticsEvent(
+        @Body analyticsEvent: AnalyticsEvent
+    ): Response<Unit>
+
+    @PATCH("experiments/{experimentId}/")
+    suspend fun updateExperiment(
+        @Path("experimentId") experimentId: Int,
+        @Body experiment: Experiment
+    ): Response<Experiment>
+
+    @GET("questions/")
+    suspend fun getQuestions(): Response<List<Question>>
+
+    @POST("experiments/{experimentId}/replies/")
+    suspend fun createReply(
+        @Path("experimentId") experimentId: Int,
+        @Body reply: Reply
+    ): Response<Reply>
+
+    @POST("questionnaires/")
+    suspend fun createQuestionnaire(
+        @Body questionnaire: Questionnaire
+    ): Response<Unit>
 }

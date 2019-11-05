@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorPrimary"
+        android:padding="16dp"
+        tools:context=".recommendation.RecommendationActivity">
+
+    <LinearLayout
+            android:id="@+id/intro_header_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+                android:id="@+id/intro_header"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="sans-serif-thin"
+                android:text="Rate Recommendation"
+                android:textColor="@android:color/white"
+                android:textSize="30sp" />
+
+    </LinearLayout>
+
+    <TextView
+            android:id="@+id/intro_body_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="sans-serif-light"
+            android:gravity="center"
+            android:text="You have recently been recommended Thing."
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/intro_header_container" />
+
+    <androidx.cardview.widget.CardView
+            android:id="@+id/rating_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/intro_body_1" >
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="8dp">
+
+            <TextView
+                    android:id="@+id/intro_body_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="32dp"
+                    android:paddingEnd="32dp"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="sans-serif-light"
+                    android:gravity="center"
+                    android:text="How did you like the recommendation?\nDid it fit your interests? Was it appropriate at the time? Was it useful to you?\n\nPlease select a rating between 0 and 5."
+                    android:textSize="14sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            <RatingBar
+                    android:id="@+id/rating_bar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="8dp"
+                    app:layout_constraintTop_toBottomOf="@+id/intro_body_2"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!--
+    <TextView
+            android:id="@+id/improvements_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:fontFamily="sans-serif-light"
+            android:gravity="center"
+            android:text="What could be improved?\nSelect as many items as you wish."
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rating_container" />
+
+    <androidx.cardview.widget.CardView
+            android:id="@+id/improvements_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/improvements_header">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="16dp" >
+
+            <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/improvements"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:chipSpacing="8dp" >
+
+                <com.google.android.material.chip.Chip
+                        android:id="@+id/improvement_1"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:fontFamily="sans-serif-light"
+                        android:text="improvement1"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Chip"
+                        android:textSize="18sp"
+                        app:chipBackgroundColor="@drawable/iotrec_chip"
+                        app:chipCornerRadius="20dp"
+                        app:chipEndPadding="12dp"
+                        app:chipMinHeight="40dp"
+                        app:chipStartPadding="12dp" />
+
+                <com.google.android.material.chip.Chip
+                        android:id="@+id/improvement_2"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:fontFamily="sans-serif-light"
+                        android:text="improvement2"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Chip"
+                        android:textSize="18sp"
+                        app:chipBackgroundColor="@drawable/iotrec_chip"
+                        app:chipCornerRadius="20dp"
+                        app:chipEndPadding="12dp"
+                        app:chipMinHeight="40dp"
+                        app:chipStartPadding="12dp" />
+
+                <com.google.android.material.chip.Chip
+                        android:id="@+id/improvement_3"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:fontFamily="sans-serif-light"
+                        android:text="improvement3"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Chip"
+                        android:textSize="18sp"
+                        app:chipBackgroundColor="@drawable/iotrec_chip"
+                        app:chipCornerRadius="20dp"
+                        app:chipEndPadding="12dp"
+                        app:chipMinHeight="40dp"
+                        app:chipStartPadding="12dp" />
+
+            </com.google.android.material.chip.ChipGroup>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+    -->
+
+    <Button
+            android:id="@+id/send_button"
+            style="@style/Widget.AppCompat.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Send Rating"
+            android:layout_marginTop="32dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rating_container" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

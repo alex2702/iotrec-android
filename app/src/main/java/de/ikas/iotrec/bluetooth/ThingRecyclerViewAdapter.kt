@@ -1,8 +1,9 @@
-package de.ikas.iotrec.bluetooth.ui
+package de.ikas.iotrec.bluetooth
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.*
+import android.content.SharedPreferences
+import android.preference.PreferenceManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -10,16 +11,10 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.graphics.drawable.RoundedBitmapDrawable
-import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.mikepenz.iconics.IconicsColor
-import com.mikepenz.iconics.IconicsDrawable
-import com.mikepenz.iconics.IconicsSize
-import com.mikepenz.iconics.IconicsSize.Companion
-import com.mikepenz.iconics.typeface.library.googlematerial.GoogleMaterial
-import com.mikepenz.iconics.utils.toIconicsColor
-import com.mikepenz.iconics.utils.toIconicsSizeDp
+import com.mikepenz.iconics.view.IconicsTextView
+import com.squareup.picasso.Picasso
 import de.ikas.iotrec.R
 import de.ikas.iotrec.database.model.Thing
 import java.text.SimpleDateFormat
@@ -28,7 +23,7 @@ import java.util.*
 
 
 class ThingRecyclerViewAdapter internal constructor(
-    context: Context,
+    private val context: Context,
     //private val mValues: List<DummyItem>,
     private val mListener: ThingListFragment.OnListFragmentInteractionListener? // double listener?
 ) : RecyclerView.Adapter<ThingRecyclerViewAdapter.ThingViewHolder>() {
@@ -40,18 +35,22 @@ class ThingRecyclerViewAdapter internal constructor(
         mListener?.onThingListFragmentInteraction(item)    // double listener?
     }
 
-
     private val TAG = "ThingRecyclerViewAdapte"
 
     private val inflater: LayoutInflater = LayoutInflater.from(context)
     private var things = emptyList<Thing>() // Cached copy of things
+    private var sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
 
     inner class ThingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val thingTitle: TextView = itemView.findViewById(R.id.thing_title)
         //val thingId: TextView = itemView.findViewById(R.id.thing_id)
         val thingDistance: TextView = itemView.findViewById(R.id.thing_distance)
+        val thingLastSeenPrefix: TextView = itemView.findViewById(R.id.thing_last_seen_header)
         val thingLastSeen: TextView = itemView.findViewById(R.id.thing_last_seen_time)
         val moreInformationIndicator: LinearLayout = itemView.findViewById(R.id.thing_more_information)
+        val thingImage: ImageView = itemView.findViewById(R.id.thing_image)
+        val thingImagePlaceholder: IconicsTextView = itemView.findViewById(R.id.thing_image_placeholder)
+        val currentScenario = sharedPrefs.getString("experimentCurrentScenario", "")
 
         /*
         val thingImage: ImageView = itemView.findViewById(R.id.thing_image)
@@ -70,35 +69,46 @@ class ThingRecyclerViewAdapter internal constructor(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ThingViewHolder {
-        Log.d(TAG, "onCreateViewHolder")
         val itemView = inflater.inflate(R.layout.fragment_thing_list_item, parent, false)
         return ThingViewHolder(itemView)
     }
 
     override fun onBindViewHolder(holder: ThingViewHolder, position: Int) {
-        Log.d(TAG, "onBindViewHolder")
-
         val currentThing = things[position]
 
-        Log.d(TAG, currentThing.lastQueried.toString())
+        // set to default layout
+        holder.thingImage.setImageResource(0)
+        holder.thingTitle.setTextColor(ContextCompat.getColor(context, R.color.colorBlack))
+        holder.thingDistance.setTextColor(ContextCompat.getColor(context, R.color.colorBlack))
+        holder.thingLastSeen.setTextColor(ContextCompat.getColor(context, R.color.colorBlack))
+        holder.thingLastSeenPrefix.setTextColor(ContextCompat.getColor(context, R.color.colorBlack))
 
         holder.thingTitle.text = currentThing.title
-        //holder.thingId.text = currentThing.id
+
+
+        // if a scenario is set, display everything not belonging to that scenario in grey
+        if(
+            (holder.currentScenario != "" && !currentThing.id.endsWith(holder.currentScenario) && currentThing.lastQueried!!.time > 0) ||
+            (currentThing.lastQueried!!.time == 0L) ||
+            (holder.currentScenario == "" && currentThing.id.endsWith("-museum")) ||
+            (holder.currentScenario == "" && currentThing.id.endsWith("-jobfair"))
+        ) {
+            holder.thingTitle.setTextColor(ContextCompat.getColor(context, R.color.colorGray))
+            holder.thingDistance.setTextColor(ContextCompat.getColor(context, R.color.colorGray))
+            holder.thingLastSeen.setTextColor(ContextCompat.getColor(context, R.color.colorGray))
+            holder.thingLastSeenPrefix.setTextColor(ContextCompat.getColor(context, R.color.colorGray))
+        }
+
         holder.thingDistance.text = "%.2f".format(currentThing.distance) + " m"
         holder.thingLastSeen.text = SimpleDateFormat("HH:mm:ss").format(currentThing.lastSeen)
 
-        /*
-        //holder.bluetoothIconDrawable.setBounds(0, 0, holder.canvas.width, holder.canvas.height)
-        holder.bluetoothIconDrawable.draw(holder.canvas)
-        holder.thingImageBitmapRound.isCircular = true
-        holder.thingImage.setImageDrawable(holder.thingImageBitmapRound)
-        */
+        if(currentThing.image != "") {
+            Picasso.get().load(currentThing.image).into(holder.thingImage)
+        }
 
         if(currentThing.lastQueried!!.equals(Date(0))) {
-            //holder.thingTitle.setTextColor(Color.GRAY)
             holder.moreInformationIndicator.visibility = View.GONE
         } else {
-            //holder.thingTitle.setTextColor(Color.BLACK)
             holder.moreInformationIndicator.visibility = View.VISIBLE
         }
 

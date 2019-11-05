@@ -1,5 +1,6 @@
 package de.ikas.iotrec.preferences.ui
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -11,6 +12,7 @@ import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -33,7 +35,6 @@ import de.ikas.iotrec.database.model.Category
 import de.ikas.iotrec.database.repository.CategoryRepository
 import de.ikas.iotrec.preferences.adapter.PreferenceRecyclerViewAdapter
 
-
 /**
  * A fragment representing a list of Items.
  * Activities containing this fragment MUST implement the
@@ -41,31 +42,19 @@ import de.ikas.iotrec.preferences.adapter.PreferenceRecyclerViewAdapter
  */
 class PreferenceListFragment : Fragment() {
 
-    private var columnCount = 1
-    //private lateinit var iotRecApi: IotRecApiInit
     private var listener: OnListFragmentInteractionListener? = null
     private val TAG = "PreferenceListFragment"
 
     private lateinit var mainActivity: MainActivity
     lateinit var app: IotRecApplication
 
-    private lateinit var categoriesDao: CategoryDao
     private lateinit var categoryRepository: CategoryRepository
     private lateinit var categoryViewModel: PreferenceViewModel
 
     lateinit var loginRepository: LoginRepository
 
-    //private var mainActivity = activity as MainActivity
-    //private var categoryViewModel = ViewModelProviders.of(this).get(PreferenceViewModel::class.java)
-    //private var categoriesDao = IotRecDatabase.getDatabase(mainActivity, GlobalScope).categoryDao()
-    //private var categoryRepository = CategoryRepository(categoriesDao)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        //retainInstance = true
-
-        Log.d(TAG, "onCreate")
 
         mainActivity = activity as MainActivity
         app = mainActivity.application as IotRecApplication
@@ -73,13 +62,7 @@ class PreferenceListFragment : Fragment() {
         loginRepository = app.loginRepository
 
         categoryViewModel = ViewModelProviders.of(this).get(PreferenceViewModel::class.java)
-        //categoriesDao = IotRecDatabase.getDatabase(mainActivity, GlobalScope).categoryDao()
-        //categoryRepository = CategoryRepository(categoriesDao)
         categoryRepository = app.categoryRepository
-
-        arguments?.let {
-            columnCount = it.getInt(ARG_COLUMN_COUNT)
-        }
 
         if(loginRepository.isLoggedIn()) {
             // get categories and insert them into database
@@ -90,7 +73,6 @@ class PreferenceListFragment : Fragment() {
                     // if successful, update database object
                     if (result.isSuccessful) {
                         val resultCategories = result.body()
-                        Log.d(TAG, resultCategories.toString())
 
                         // insert categories into database
                         categoryRepository.insertMultiple(*resultCategories!!.toTypedArray())
@@ -115,9 +97,6 @@ class PreferenceListFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-        Log.d(TAG, "onCreateView")
-
         val view = inflater.inflate(R.layout.fragment_preference_list, container, false)
         val recyclerView = view.findViewById<RecyclerView>(R.id.list)
         val notLoggedInText = view.findViewById<TextView>(R.id.categories_not_logged_in_text)
@@ -132,19 +111,13 @@ class PreferenceListFragment : Fragment() {
             // Set the adapter
             if (recyclerView is RecyclerView) {
                 with(recyclerView) {
-                    //layoutManager = when {
-                    //    columnCount <= 1 -> LinearLayoutManager(context)
-                    //    else -> GridLayoutManager(context, columnCount)
-                    //}
-
                     layoutManager = LinearLayoutManager(context)
 
                     adapter = PreferenceRecyclerViewAdapter(context, listener)
 
-                    // TODO replace with live data
                     if (loginRepository.isLoggedIn()) {
                         (adapter as PreferenceRecyclerViewAdapter).preferences =
-                            loginRepository.user!!.preferences   // TODO NPE on new setup // TODO is this needed?
+                            loginRepository.user!!.preferences
                     }
 
                     categoryViewModel.topLevelCategories.observe(
@@ -168,6 +141,26 @@ class PreferenceListFragment : Fragment() {
                 }
             }
 
+            if(loginRepository.user!!.preferences.size == 0) {
+                val builder = AlertDialog.Builder((activity as Activity))
+                builder
+                    .setMessage("You haven't set any preferences yet.\n\nHere's how it works:\n" +
+                            "The categories are structured in a hierarchy of two levels. " +
+                            "Categories that you can select as your personal preferences are " +
+                            "located on the second level. Click a top-level category to view " +
+                            "the second-level options in that category.\n\nFor each second-level " +
+                            "option, you can select whether you like it (thumbs up button) or " +
+                            "you dislike it (thumbs down button). Neutral choices (i.e. the " +
+                            "middle button) will not have an effect on the recommendations " +
+                            "your receive.")
+                    .setCancelable(false)
+                    .setPositiveButton("Got it!") { _, _ -> }
+
+                val alert = builder.create()
+                alert.setTitle("Setting Preferences")
+                alert.show()
+            }
+
             return view
         } else {
             loadingCircle.visibility = View.GONE
@@ -177,13 +170,18 @@ class PreferenceListFragment : Fragment() {
 
             notLoggedInButton.setOnClickListener {
                 // move to profile fragment
-                activity!!.supportFragmentManager
-                    .beginTransaction()
-                    .replace(R.id.fragment_container, ProfileFragment(), tag)
-                    .commit()
+                //activity!!.supportFragmentManager
+                //    .beginTransaction()
+                //    .replace(R.id.fragment_container, ProfileFragment(), tag)
+                //    .commit()
+                (activity as MainActivity).navView.selectedItemId = R.id.navigation_profile
+
                 // start login activity
-                val intent = Intent(activity, LoginActivity::class.java)
-                startActivity(intent)
+                //val intent = Intent(activity, LoginActivity::class.java)
+                //intent.putExtra("ORIGIN", "preferences")
+                //(activity as MainActivity).startActivityForResult(intent,
+                //    MainActivity.START_LOGIN_ACTIVITY_REQUEST_CODE
+                //)
             }
 
             return view
@@ -207,17 +205,14 @@ class PreferenceListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        Log.d(TAG, "onResume")
     }
 
     override fun onStart() {
         super.onStart()
-        Log.d(TAG, "onStart")
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
-        Log.d(TAG, "onHiddenChanged")
     }
 
     /**
@@ -236,17 +231,8 @@ class PreferenceListFragment : Fragment() {
     }
 
     companion object {
-
-        // TODO: Customize parameter argument names
-        const val ARG_COLUMN_COUNT = "column-count"
-
-        // TODO: Customize parameter initialization
         @JvmStatic
         fun newInstance(columnCount: Int) =
-            PreferenceListFragment().apply {
-                arguments = Bundle().apply {
-                    putInt(ARG_COLUMN_COUNT, columnCount)
-                }
-            }
+            PreferenceListFragment().apply {}
     }
 }

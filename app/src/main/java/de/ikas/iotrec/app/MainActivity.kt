@@ -1,18 +1,18 @@
 package de.ikas.iotrec.app
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.preference.PreferenceManager
 import de.ikas.iotrec.R
-import de.ikas.iotrec.bluetooth.ui.ThingListFragment
-import java.util.logging.Logger
+import de.ikas.iotrec.bluetooth.ThingListFragment
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import de.ikas.iotrec.account.ui.LoginActivity
-import de.ikas.iotrec.bluetooth.ui.ThingBottomSheetFragment
+import de.ikas.iotrec.bluetooth.ThingBottomSheetFragment
 import de.ikas.iotrec.database.model.Thing
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -37,11 +37,15 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import de.ikas.iotrec.database.model.Preference
 import de.ikas.iotrec.database.repository.PreferenceRepository
-import android.bluetooth.BluetoothAdapter
-import androidx.core.app.ComponentActivity.ExtraData
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-
+import androidx.appcompat.app.AlertDialog
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
+import de.ikas.iotrec.account.data.model.User
+import de.ikas.iotrec.database.model.Question
+import de.ikas.iotrec.database.repository.ExperimentRepository
+import de.ikas.iotrec.database.repository.ReplyRepository
+import de.ikas.iotrec.experiment.ExperimentFragment
+import java.util.*
 
 
 class MainActivity :
@@ -49,7 +53,8 @@ class MainActivity :
     ThingListFragment.OnListFragmentInteractionListener,
     PreferenceListFragment.OnListFragmentInteractionListener,
     ProfileFragment.OnFragmentInteractionListener,
-    PreferenceSelectDialogFragment.OnFragmentInteractionListener {
+    PreferenceSelectDialogFragment.OnFragmentInteractionListener,
+    ExperimentFragment.OnQuestionListFragmentInteractionListener {
 
     //private lateinit var notificationHelper: NotificationHelper
     //private var backgroundPowerSaver: BackgroundPowerSaver? = null
@@ -76,19 +81,20 @@ class MainActivity :
     var userPreferencesToBeAdded = mutableListOf<String>()
     var userPreferencesToBeRemoved = mutableListOf<String>()
     //private var preferenceDialogListener: OnPreferenceDialogFragmentInteractionListener? = null
+    lateinit var experimentRepository: ExperimentRepository
+    lateinit var replyRepository: ReplyRepository
+
+    lateinit var navView: BottomNavigationView
 
     private val TAG = "MainActivity"
 
-    // constants for permission request callbacks
-    private val IOTREC_PERMISSION_REQUEST_COARSE_LOCATION = 1
-
     private lateinit var broadcastReceiver: BroadcastReceiver
 
-    val logger = Logger.getLogger(MainActivity::class.java.name)
 
-    // TODO what else to put in here from the above declarations? => general research needed
     companion object {
-        //const val START_LOGIN_ACTIVITY_REQUEST_CODE = 0
+        // constants for activity and permission request callbacks
+        const val START_LOGIN_ACTIVITY_REQUEST_CODE = 15623
+        const val IOTREC_PERMISSION_REQUEST_COARSE_LOCATION = 18451
     }
 
     private val onNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
@@ -103,14 +109,11 @@ class MainActivity :
                 loadFragment(item.itemId)
                 return@OnNavigationItemSelectedListener true
             }
-            /*
-            R.id.navigation_settings -> {
-                setTitle(R.string.title_settings)
-                textMessage.setText(R.string.title_settings)
+            R.id.navigation_experiment-> {
+                setTitle(R.string.title_experiment)
                 loadFragment(item.itemId)
                 return@OnNavigationItemSelectedListener true
             }
-            */
             R.id.navigation_profile -> {
                 // check if a user is logged in (via token in sharedPrefs)
                 val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
@@ -131,11 +134,10 @@ class MainActivity :
 
                 if (token == "") {
                     // if user is not logged in, show LoginActivity on top
-                    // TODO do I want this?
                     loginRepository.logout()
                     val intent = Intent(this, LoginActivity::class.java)
-                    //startActivityForResult(intent, START_LOGIN_ACTIVITY_REQUEST_CODE)
-                    startActivity(intent)
+                    startActivityForResult(intent, START_LOGIN_ACTIVITY_REQUEST_CODE)
+                    //startActivity(intent)
                 }
 
                 return@OnNavigationItemSelectedListener true
@@ -150,7 +152,6 @@ class MainActivity :
 
         Log.d(TAG, "MainActivity – onCreate")
 
-        // TODO move somewhere else for performance reason? further down in here?
         app = application as IotRecApplication
         loginRepository = app.loginRepository
         if(loginRepository.user != null) {
@@ -159,7 +160,7 @@ class MainActivity :
 
 
         setContentView(R.layout.activity_main)
-        val navView: BottomNavigationView = findViewById(R.id.nav_view)
+        navView = findViewById(R.id.nav_view)
         navView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener)
 
         //supportFragmentManager.beginTransaction().add(profileFragment, "4").hide(profileFragment).commit()
@@ -171,7 +172,26 @@ class MainActivity :
         // set first tab as selected
         navView.selectedItemId = R.id.navigation_things
 
-        // TODO put this in LoginRepository
+        // synchronize categories and experiment questions
+        GlobalScope.launch {
+            val result = app.iotRecApi.getCategories()
+
+            // if successful, update database
+            if (result.isSuccessful) {
+                val resultCategories = result.body()
+                app.categoryRepository.insertMultiple(*resultCategories!!.toTypedArray())
+            }
+
+            val resultQ = app.iotRecApi.getQuestions()
+
+            // if successful, update database
+            if (resultQ.isSuccessful) {
+                val resultQuestions = resultQ.body()
+                Log.d(TAG, resultQuestions.toString())
+                app.questionRepository.insertMultiple(*resultQuestions!!.toTypedArray())
+            }
+        }
+
         // if a JWT is present in shared prefs, verify validity
         val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
         val token = sharedPrefs.getString("userToken", "")
@@ -260,7 +280,6 @@ class MainActivity :
 
             // check if we should show an explanation (i.e. when the user has denied permission before)
             //if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
-                // TODO
                 // Show an explanation to the user *asynchronously* -- don't block
                 // this thread waiting for the user's response! After the user
                 // sees the explanation, try again to request the permission.
@@ -284,6 +303,8 @@ class MainActivity :
         categoryRepository = CategoryRepository(categoriesDao)
 
         preferenceRepository = app.preferenceRepository
+        experimentRepository = app.experimentRepository
+        replyRepository = app.replyRepository
     }
 
     override fun onRequestPermissionsResult(requestCode: Int,
@@ -296,7 +317,7 @@ class MainActivity :
                     app.startBluetoothScanning()
                 } else {
                     // permission denied
-                    // TODO display a message in ThingListFragment but find a way to start scanning and removing the message once permission is granted
+                    // display a message in ThingListFragment but find a way to start scanning and removing the message once permission is granted
                 }
                 return
             }
@@ -347,13 +368,11 @@ class MainActivity :
             R.id.navigation_preferences -> {
                 PreferenceListFragment.newInstance(1)
             }
-            /*
-            R.id.navigation_settings -> {
-                SettingFragment.newInstance(1)
-            }
-            */
             R.id.navigation_profile -> {
                 ProfileFragment()
+            }
+            R.id.navigation_experiment -> {
+                ExperimentFragment()
             }
             else -> {
                 null
@@ -448,38 +467,72 @@ class MainActivity :
         }
 
         // load dialog fragment to select sub-categories
+        //val fragmentTransaction = supportFragmentManager.beginTransaction()
+        //fragmentTransaction.addToBackStack("preference_select_dialog")
         val fragment = PreferenceSelectDialogFragment.newInstance(category)
         fragment.show(supportFragmentManager, "preference_select_dialog")
     }
 
-    /*
-    fun onPreferenceDialogFragmentInteraction(category: Category) {
-        Log.d("MainActivity", "sub-category clicked")
-
-        // mark clicked category as selected
-        // TODO
-
-        // add clicked category to set of selected categories
-        // TODO
+    override fun onQuestionListFragmentInteraction(question: Question) {
+        Log.d(TAG, "a question list item was clicked")
     }
-    */
-
 
     override fun onFragmentInteraction(uri: Uri) {
         Log.d(TAG, "onFragmentInteraction")
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     } // double preferenceDialogListener? */ /*, BeaconConsumer*/ {
 
-    /*
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == START_LOGIN_ACTIVITY_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            // if login has been completed (either successfully or unsuccessfully), show profile tab)
-            Log.d(TAG, "showing ProfileFragment")
+            // if login has been completed (either successfully or unsuccessfully), reload profile fragment
+            //supportFragmentManager.beginTransaction().replace(R.id.fragment_container, ProfileFragment()).commit()
+
+            if(data != null) {
+                Log.d(TAG, "data is not null")
+
+                val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
+                val json = sharedPrefs.getString("user", "{}")
+                val moshi = Moshi.Builder().add(Date::class.java, Rfc3339DateJsonAdapter().nullSafe()).build()
+                val adapter = moshi.adapter(User::class.java)
+                val user = adapter.fromJson(json!!)
+
+                if(data.getStringExtra("ACTION") == "signup" || (user != null && user.preferences.isEmpty())) {
+                    Log.d(TAG, "action is signup or user has no preferences")
+
+                    // show AlertDialog asking user to set preferences
+                    val builder = AlertDialog.Builder(this)
+                    builder
+                        .setCancelable(false)
+                        .setPositiveButton("OK, let's go!") { dialog, which ->
+                            supportFragmentManager.beginTransaction().replace(
+                                R.id.fragment_container,
+                                PreferenceListFragment(),
+                                R.id.navigation_preferences.toString()
+                            ).commit()
+                            navView.selectedItemId = R.id.navigation_preferences
+                        }
+                        .setNegativeButton("Not now") { dialog, _ -> dialog.cancel() }
+
+                    if (data.getStringExtra("ACTION") == "login") {
+                        Log.d(TAG, "got string extra login")
+                        builder.setMessage("It looks like you have not set your preferences yet. In order to receive useful recommendations, please select them now.")
+                    } else if (data.getStringExtra("ACTION") == "signup") {
+                        Log.d(TAG, "got string extra signup")
+                        builder.setMessage("Thank you for signing up. In order to receive useful recommendations, please select your personal preferences now.")
+                    }
+
+                    val alert = builder.create()
+                    alert.setTitle("Welcome!")
+                    alert.show()
+                }
+            } else {
+                Log.d(TAG, "data is null")
+            }
         } else {
             super.onActivityResult(requestCode, resultCode, data)
         }
     }
-    */
+
 
     fun onPreferenceToggle(toggleButtonView: View) {
         val radioGroupView = toggleButtonView.parent as RadioGroup

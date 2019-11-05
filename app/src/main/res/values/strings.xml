@@ -2,7 +2,7 @@
     <string name="app_name">IoT Rec</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_things">Things</string>
-    <string name="title_settings">Settings</string>
+    <string name="title_experiment">Experiment</string>
     <string name="title_preferences">Preferences</string>
     <string name="title_thing_list">Things</string>
     <string name="title_thing_detail">Thing</string>
@@ -34,7 +34,4 @@
     <string name="not_logged_in">You\'re not logged in.</string>
 
     <string name="network_failed">Network connection failed. Are you online? Is the backend online?</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

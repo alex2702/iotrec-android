@@ -4,7 +4,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:name="de.ikas.iotrec.bluetooth.ui.ThingListFragment"
-        tools:context=".bluetooth.ui.ThingListFragment"
+        tools:context=".bluetooth.ThingListFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 

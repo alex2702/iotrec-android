@@ -1,0 +1,20 @@
+package de.ikas.iotrec.database.util
+
+import android.util.Log
+import androidx.room.TypeConverter
+
+object ListConverter {
+    @TypeConverter
+    @JvmStatic
+    fun toList(value: String): List<String> {
+        Log.d("ListConverter", "toList: " + value)
+        return value.let { it.split(";").map { x -> x.trim() } }
+    }
+
+    @TypeConverter
+    @JvmStatic
+    fun fromList(list: List<String>): String {
+        Log.d("ListConverter", "fromList: " + list.toString())
+        return list.joinToString(";")
+    }
+}

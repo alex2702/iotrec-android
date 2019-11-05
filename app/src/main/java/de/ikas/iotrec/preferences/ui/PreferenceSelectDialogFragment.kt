@@ -1,6 +1,7 @@
 package de.ikas.iotrec.preferences.ui
 
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -24,18 +25,6 @@ import de.ikas.iotrec.database.model.Category
 import de.ikas.iotrec.database.model.Preference
 import de.ikas.iotrec.preferences.adapter.PreferenceDialogRecyclerViewAdapter
 
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val CATEGORY = "category"
-
-/**
- * A simple [Fragment] subclass.
- * Activities that contain this fragment must implement the
- * [PreferenceSelectDialogFragment.OnFragmentInteractionListener] interface
- * to handle interaction events.
- * Use the [PreferenceSelectDialogFragment.newInstance] factory method to
- * create an instance of this fragment.
- *
- */
 class PreferenceSelectDialogFragment : DialogFragment() {
 
     private lateinit var mainActivity: MainActivity
@@ -52,7 +41,7 @@ class PreferenceSelectDialogFragment : DialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            category = it.getParcelable(CATEGORY)
+            category = it.getParcelable(Companion.CATEGORY)
         }
 
         Log.d(TAG, category.toString())
@@ -64,10 +53,6 @@ class PreferenceSelectDialogFragment : DialogFragment() {
         preferenceViewModel = ViewModelProviders.of(this).get(PreferenceViewModel::class.java)
         preferenceViewModel.updateSubCategoriesInCategory(category!!.textId)
         preferenceViewModel.updatePreferencesInCategory(category!!.textId)
-
-        // get categories already saved in the user profile
-        //currentPreferences = loginRepository.user!!.preferences
-        //Log.d(TAG, currentPreferences.toString())
     }
 
     override fun onCreateView(
@@ -115,37 +100,11 @@ class PreferenceSelectDialogFragment : DialogFragment() {
         this.isCancelable = false
 
         closeButton.setOnClickListener {
-
-            // drop all changes
-            //mainActivity.userPreferencesToBeRemoved.clear()
-            //mainActivity.userPreferencesToBeAdded.clear()
-
             this.dismiss()
         }
-
-        /*
-        val saveButton = view.findViewById(R.id.dialog_preference_choice_save) as Button
-        saveButton.setOnClickListener {
-            // create the final selected-categories list
-            val preferencesToBeSaved = currentPreferences.minus(mainActivity.userPreferencesToBeRemoved).plus(mainActivity.userPreferencesToBeAdded)
-
-            // save them to LoginRepository
-            loginRepository.updatePreferences(preferencesToBeSaved)
-
-            // hide the dialog
-            this.dismiss()
-        }
-        */
 
         return view
     }
-
-    /*
-    // TODO: Rename method, update argument and hook method into UI event
-    fun onButtonPressed(category: Category) {
-        listener?.onPreferenceSelectDialogFragmentInteraction(category)
-    }
-    */
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -168,13 +127,23 @@ class PreferenceSelectDialogFragment : DialogFragment() {
 
         Log.d(TAG, "onResume")
 
+        dialog?.setOnKeyListener(
+            DialogInterface.OnKeyListener { dialog, keyCode, _ ->
+                if(keyCode == android.view.KeyEvent.KEYCODE_BACK) {
+                    dialog.dismiss()
+                    return@OnKeyListener true
+                } else {
+                    return@OnKeyListener false
+                }
+            }
+        )
+
         // set dialog width
         dialog?.window?.setLayout(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.WRAP_CONTENT
         )
     }
-
 
     /**
      * This interface must be implemented by activities that contain this
@@ -206,5 +175,7 @@ class PreferenceSelectDialogFragment : DialogFragment() {
                     putParcelable(CATEGORY, category)
                 }
             }
+
+        private const val CATEGORY = "category"
     }
 }

@@ -22,7 +22,7 @@
             tools:ignore="GoogleAppIndexingWarning">
 
         <service
-                android:name=".bluetooth.service.RecommendationCheckerService"
+                android:name=".recommendation.RecommendationCheckerService"
                 android:enabled="true"
                 android:exported="true" />
 
@@ -34,6 +34,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
                 android:name=".account.ui.LoginActivity"
                 android:label="@string/title_login"
@@ -42,14 +43,19 @@
                     android:name="android.support.PARENT_ACTIVITY"
                     android:value="de.ikas.iotrec.app.MainActivity" />
         </activity>
+
         <activity android:name=".recommendation.RecommendationActivity" />
-        <!--
-<service
-                android:name=".bluetooth.service.BluetoothScannerService"
-                android:enabled="true"
-                android:exported="true">
-        </service>
-        -->
+
+        <activity android:name=".recommendation.RatingActivity" />
+
+        <receiver
+                android:name=".rating.RatingAlarmReceiver"
+                android:enabled="true" />
+
+        <service
+                android:name=".rating.RatingNotificationService"
+                android:enabled="true" />
+
         <service
                 android:name="org.altbeacon.beacon.service.BeaconService"
                 tools:node="replace">

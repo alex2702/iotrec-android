@@ -1,19 +1,17 @@
-package de.ikas.iotrec.bluetooth.ui
+package de.ikas.iotrec.bluetooth
 
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
-import androidx.lifecycle.ViewModelProviders
+import com.squareup.picasso.Picasso
 import de.ikas.iotrec.R;
 import de.ikas.iotrec.database.model.Thing
-import kotlinx.android.synthetic.main.fragment_thing_bottom_sheet.*
-import java.io.Serializable
 
 class ThingBottomSheetFragment : BottomSheetDialogFragment() {
 
@@ -44,14 +42,57 @@ class ThingBottomSheetFragment : BottomSheetDialogFragment() {
         textViewTitle.text = thing.title
 
         val textViewDescription: TextView = view.findViewById(R.id.thing_description)
+        val textViewCategoriesHeader: TextView = view.findViewById(R.id.thing_categories_header)
+        val textViewCategories: TextView = view.findViewById(R.id.thing_categories)
+        val textViewIdHeader: TextView = view.findViewById(R.id.thing_id_header)
+        val textViewId: TextView = view.findViewById(R.id.thing_id)
+        val textViewOccupationHeader: TextView = view.findViewById(R.id.thing_occupation_header)
+        val textViewOccupation: TextView = view.findViewById(R.id.thing_occupation)
+        val imageView: ImageView = view.findViewById(R.id.thing_image)
+
         if(loginStatusBoolean) {
+            textViewCategories.visibility = View.VISIBLE
+            textViewId.visibility = View.VISIBLE
+            textViewOccupation.visibility = View.VISIBLE
+            textViewCategoriesHeader.visibility = View.VISIBLE
+            textViewIdHeader.visibility = View.VISIBLE
+            textViewOccupationHeader.visibility = View.VISIBLE
+
             if(thing.description == "") {
                 textViewDescription.text = "This beacon's details have not been fetched yet or could not be found."
             } else {
                 textViewDescription.text = thing.description
             }
+
+            val categories: String
+            if(thing.categories != null && thing.categories != "") {
+                categories = thing.categories!!.replace("_", "/").replace(";", "\n")
+            } else {
+                categories = "none"
+            }
+            textViewCategories.text = categories
+
+            textViewId.text = thing.id
+
+            if(thing.occupation == 0) {
+                textViewOccupation.text = "nobody"
+            } else if(thing.occupation == 1) {
+                textViewOccupation.text = "1 user (you)"
+            } else if(thing.occupation > 1) {
+                textViewOccupation.text = "${thing.occupation} users (including you)"
+            }
+
+            if(thing.image != "") {
+                Picasso.get().load(thing.image).into(imageView)
+            }
         } else {
             textViewDescription.text = "Please log in or sign up to view a beacon's details."
+            textViewCategories.visibility = View.GONE
+            textViewId.visibility = View.GONE
+            textViewOccupation.visibility = View.GONE
+            textViewCategoriesHeader.visibility = View.GONE
+            textViewIdHeader.visibility = View.GONE
+            textViewOccupationHeader.visibility = View.GONE
         }
 
 
@@ -82,12 +123,6 @@ class ThingBottomSheetFragment : BottomSheetDialogFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        val parent = parentFragment
-        if (parent != null) {
-
-        } else {
-
-        }
     }
 
     override fun onDetach() {

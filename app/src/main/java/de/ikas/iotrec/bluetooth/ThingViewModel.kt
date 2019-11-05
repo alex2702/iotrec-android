@@ -1,4 +1,4 @@
-package de.ikas.iotrec.bluetooth.ui
+package de.ikas.iotrec.bluetooth
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel

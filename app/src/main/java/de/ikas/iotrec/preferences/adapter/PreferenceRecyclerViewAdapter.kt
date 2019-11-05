@@ -32,7 +32,7 @@ class PreferenceRecyclerViewAdapter internal constructor(
     private val TAG = "PreferenceRecViewAdapt"
     private val inflater: LayoutInflater = LayoutInflater.from(context)
     private var categories = emptyList<Category>() // Cached copy of categories
-    var preferences = mutableListOf<Preference>() // TODO is this needed?
+    var preferences = mutableListOf<Preference>()
     //var categoryCounts:
 
     var app = context.applicationContext as IotRecApplication

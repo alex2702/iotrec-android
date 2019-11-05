@@ -2,6 +2,7 @@ package de.ikas.iotrec.account.ui
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
@@ -21,20 +22,27 @@ import de.ikas.iotrec.R
 import android.preference.PreferenceManager
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.app.AlertDialog
 import de.ikas.iotrec.app.IotRecApplication
+import de.ikas.iotrec.app.ProfileFragment
 import de.ikas.iotrec.extensions.hideKeyboard
+import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.IO
 
 
 class LoginActivity : AppCompatActivity(), SignupFragment.OnFragmentInteractionListener {
 
-    //var app = application as IotRecApplication
-
+    private lateinit var app: IotRecApplication
     private lateinit var loginViewModel: LoginViewModel
+    private val job = Job()
+    private val scope = CoroutineScope(Dispatchers.Main + job)
 
     private val TAG = "LoginActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        app = application as IotRecApplication
 
         setContentView(R.layout.activity_login)
 
@@ -69,8 +77,7 @@ class LoginActivity : AppCompatActivity(), SignupFragment.OnFragmentInteractionL
                 showLoginFailed(loginResult.error)
             }
             if (loginResult.success != null) {
-                // show success message and profile tab
-                updateUiWithUser(loginResult.success)
+
 
                 // store user information in shared preferences
                 //val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
@@ -80,12 +87,42 @@ class LoginActivity : AppCompatActivity(), SignupFragment.OnFragmentInteractionL
                 //editor.putString("user.token", loginResult.success.token)
                 //editor.apply()
 
-                setResult(Activity.RESULT_OK)
 
+                scope.launch {
+                    Log.d(TAG, "launched")
+                    //sync categories
+                    val result = app.iotRecApi.getCategories()
+                    Log.d(TAG, "got result from getCategories")
+
+                    // if successful, update database object
+                    if (result.isSuccessful) {
+                        Log.d(TAG, "result successful")
+                        val resultCategories = result.body()
+                        Log.d(TAG, resultCategories.toString())
+
+                        // insert categories into database
+                        app.categoryRepository.insertMultiple(*resultCategories!!.toTypedArray())
+                        Log.d(TAG, "inserted categories")
+                    }
+                }
+
+                //runOnUiThread {
+                Log.d(TAG, "updateUiWithUser")
+                // show success message and profile tab
+                updateUiWithUser(loginResult.success)
+
+                Log.d(TAG, loginResult.success.preferences.toString())
+
+                val resultIntent = Intent()
+                resultIntent.putExtra("ACTION", "login")
+                Log.d(TAG, "setResult")
+                setResult(Activity.RESULT_OK, resultIntent)
+
+                Log.d(TAG, "finish")
                 //Complete and destroy login activity once successful
                 finish()
-            }
 
+            }
         })
 
 
@@ -136,9 +173,8 @@ class LoginActivity : AppCompatActivity(), SignupFragment.OnFragmentInteractionL
             supportFragmentManager
                 .beginTransaction()
                 .replace(R.id.container, signupFragment)
-                .addToBackStack(null)   //TODO do I want this?
+                .addToBackStack(null)
                 .commit()
-            //TODO transmit data that has already been entered into the login form?
         }
     }
 
@@ -149,7 +185,6 @@ class LoginActivity : AppCompatActivity(), SignupFragment.OnFragmentInteractionL
         //val preferences = model.preferences
         //Log.d(TAG, preferences.toString())
 
-        // TODO : initiate successful logged in experience
         Toast.makeText(
             applicationContext,
             "$welcome $username",
