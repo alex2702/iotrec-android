@@ -12,13 +12,18 @@ import java.util.*
 @Entity(tableName = "thing_table")
 data class Thing(
     @PrimaryKey var id: String,
+    var type: String,
     var title: String,
     var description: String?,
-    var uuid: String,
-    @Json(name = "major_id")
-    var major: Int,
-    @Json(name = "minor_id")
-    var minor: Int,
+    var iBeaconUuid: String?,
+    @Json(name = "ibeacon_major_id")
+    var iBeaconMajor: Int?,
+    @Json(name = "ibeacon_minor_id")
+    var iBeaconMinor: Int?,
+    @Json(name = "eddystone_namespace_id")
+    var eddystoneNamespaceId: String?,
+    @Json(name = "eddystone_instance_id")
+    var eddystoneInstanceId: String?,
     var bluetoothName: String?,
     var distance: Double?,
     var typeCode: Int?,
@@ -30,6 +35,9 @@ data class Thing(
     var lastQueried: Date?, // last time the query was successful (i.e. the thing was found on the server)
     var lastTriedToQuery: Date?,
     var lastRecommended: Date?,
-    var lastCheckedForRecommendation: Date?
-    // TODO add image
+    var lastCheckedForRecommendation: Date?,
+    var image: String?,
+    var categories: String?,
+    var occupation: Int,
+    var recommendationQueryRunning: Boolean
 ) : Parcelable

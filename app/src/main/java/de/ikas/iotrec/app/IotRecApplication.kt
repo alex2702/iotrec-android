@@ -1,56 +1,43 @@
 package de.ikas.iotrec.app
 
-import android.Manifest
 import android.util.Log
 import android.content.Intent
 import android.app.*
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.ProcessLifecycleOwner
 import de.ikas.iotrec.R
 //import de.ikas.iotrec.bluetooth.service.BluetoothScannerService
 import de.ikas.iotrec.network.IotRecApiInit
 import org.altbeacon.beacon.*
 import org.altbeacon.beacon.powersave.BackgroundPowerSaver
-import android.bluetooth.le.ScanFilter
-import android.content.pm.PackageManager
-import android.provider.Settings
-import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
 import de.ikas.iotrec.account.data.LoginRepository
-import de.ikas.iotrec.account.data.model.User
-import de.ikas.iotrec.bluetooth.service.RecommendationCheckerService
+import de.ikas.iotrec.recommendation.RecommendationCheckerService
 import de.ikas.iotrec.database.db.IotRecDatabase
 import de.ikas.iotrec.database.model.Thing
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.*
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import android.location.Location
+import android.location.LocationListener
 import android.location.LocationManager
+import android.os.Bundle
+import android.preference.PreferenceManager
 import com.mikepenz.iconics.Iconics
 import de.ikas.iotrec.database.dao.*
 import de.ikas.iotrec.database.repository.*
 import de.ikas.iotrec.network.OpenWeatherApiInit
 
 
-class IotRecApplication : Application(), BeaconConsumer {
-
+class IotRecApplication : Application(), BeaconConsumer, LocationListener {
     private val TAG = "IotRecApplication"
-
-    //lateinit var appLifecycleObserver: IotRecAppLifecycleObserver
-
-    //lateinit var iotRecDatabase: IotRecDatabase
-    //private val applicationJob = Job()
-    //private val applicationScope = CoroutineScope(Dispatchers.Main + applicationJob)
-
     private lateinit var beaconManager: BeaconManager
     var bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     lateinit var locationManager: LocationManager
+    lateinit var location: Location
 
     val iotRecApi = IotRecApiInit(this)
     lateinit var loginRepository: LoginRepository
@@ -70,10 +57,21 @@ class IotRecApplication : Application(), BeaconConsumer {
     private lateinit var feedbackDao: FeedbackDao
     lateinit var feedbackRepository: FeedbackRepository
 
-    //private lateinit var ratingDao: RatingDao
-    //lateinit var ratingRepository: RatingRepository
+    private lateinit var ratingDao: RatingDao
+    lateinit var ratingRepository: RatingRepository
+
+    private lateinit var experimentDao: ExperimentDao
+    lateinit var experimentRepository: ExperimentRepository
+
+    private lateinit var questionDao: QuestionDao
+    lateinit var questionRepository: QuestionRepository
+
+    private lateinit var replyDao: ReplyDao
+    lateinit var replyRepository: ReplyRepository
 
     val openWeatherApi = OpenWeatherApiInit(this)
+
+    private lateinit var sharedPrefs: SharedPreferences
 
     // user management
     //public var user: User? = null
@@ -93,6 +91,8 @@ class IotRecApplication : Application(), BeaconConsumer {
         Log.d(TAG, Build.VERSION.SDK_INT.toString())
         Log.d(TAG, Build.VERSION_CODES.O_MR1.toString())
 
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
+
         categoryDao = IotRecDatabase.getDatabase(this, GlobalScope).categoryDao()
         categoryRepository = CategoryRepository(categoryDao)
 
@@ -108,17 +108,47 @@ class IotRecApplication : Application(), BeaconConsumer {
         feedbackDao = IotRecDatabase.getDatabase(this, GlobalScope).feedbackDao()
         feedbackRepository = FeedbackRepository(feedbackDao)
 
-        //ratingDao = IotRecDatabase.getDatabase(this, GlobalScope).ratingDao()
-        //ratingRepository = RatingRepository(ratingDao)
+        ratingDao = IotRecDatabase.getDatabase(this, GlobalScope).ratingDao()
+        ratingRepository = RatingRepository(ratingDao)
+
+        experimentDao = IotRecDatabase.getDatabase(this, GlobalScope).experimentDao()
+        experimentRepository = ExperimentRepository(iotRecApi, experimentDao)
+
+        questionDao = IotRecDatabase.getDatabase(this, GlobalScope).questionDao()
+        questionRepository = QuestionRepository(iotRecApi, questionDao)
+
+        replyDao = IotRecDatabase.getDatabase(this, GlobalScope).replyDao()
+        replyRepository = ReplyRepository(iotRecApi, replyDao)
 
         loginRepository = LoginRepository(iotRecApi, this)
 
         // gets up-to-date user profile if a user is logged in
         if(loginRepository.isLoggedIn()) {
-            loginRepository.syncUserProfile()
+            //loginRepository.syncUserProfile()
         }
 
         locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        val provider: String
+        if(locationManager.allProviders.contains("network")) {
+            provider = LocationManager.NETWORK_PROVIDER
+        } else if(locationManager.allProviders.contains("passive")) {
+            provider = LocationManager.PASSIVE_PROVIDER
+        } else {
+            provider = LocationManager.GPS_PROVIDER
+        }
+        location = Location(provider)
+
+        try {
+            locationManager.requestLocationUpdates(
+                provider,
+                60000,
+                100f,
+                this
+            )
+        } catch (e: SecurityException) {
+            Log.d(TAG, e.toString())
+        }
 
         prepareBluetoothScanning()
 
@@ -136,9 +166,6 @@ class IotRecApplication : Application(), BeaconConsumer {
         //intent.putExtra("DATABASE", iotRecDatabase)
         //this.startActivity(intent)
 
-        // get permissions needed for bluetooth scanning
-        // TODO
-
         // start bluetooth scanner service
         //startService(Intent(this, BluetoothScannerService()::class.java))
         //ContextCompat.startForegroundService(this, Intent(this, BluetoothScannerService()::class.java))
@@ -147,7 +174,14 @@ class IotRecApplication : Application(), BeaconConsumer {
         // set up beacon manager
         beaconManager = BeaconManager.getInstanceForApplication(this)
 
+        // iBeacon
         beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
+
+        beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT))
+        //beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_TLM_LAYOUT))
+        //beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_URL_LAYOUT))
+        //beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(BeaconParser.URI_BEACON_LAYOUT))
+        //beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(BeaconParser.ALTBEACON_LAYOUT))
 
         BeaconManager.setDebug(false)
 
@@ -180,13 +214,13 @@ class IotRecApplication : Application(), BeaconConsumer {
         beaconManager.enableForegroundServiceScanning(notification, 456)
         beaconManager.setEnableScheduledScanJobs(false)
         //beaconManager.foregroundBetweenScanPeriod = 0
-        beaconManager.foregroundBetweenScanPeriod = 10000
+        beaconManager.foregroundBetweenScanPeriod = 0
         //beaconManager.foregroundScanPeriod = 1100
-        beaconManager.foregroundScanPeriod = 6000
+        beaconManager.foregroundScanPeriod = 3000
         //beaconManager.backgroundBetweenScanPeriod = 5000
-        beaconManager.backgroundBetweenScanPeriod = 20000
+        beaconManager.backgroundBetweenScanPeriod = 0
         //beaconManager.backgroundScanPeriod = 1100
-        beaconManager.backgroundScanPeriod = 6000
+        beaconManager.backgroundScanPeriod = 3000
 
         //beaconManager.disableForegroundServiceScanning()
 
@@ -219,82 +253,187 @@ class IotRecApplication : Application(), BeaconConsumer {
                 val rangedBeacons: MutableList<Thing> = mutableListOf()
 
                 for (beacon in beacons) {
-                    Log.d(TAG,"beaconData - distance: " + beacon.distance + " id:" + beacon.id1 + "/" + beacon.id2 + "/" + beacon.id3)
-                    //Log.d(TAG, beacon.toString())
-                    //Log.d(TAG, beacon.manufacturer.toString())
-                    Log.d(TAG, "beaconData - dataFields: " + beacon.dataFields?.toString())
-                    Log.d(TAG, "beaconData - extraDataFields: " + beacon.extraDataFields?.toString())
-                    Log.d(TAG, "beaconData - beaconTypeCode: " + beacon.beaconTypeCode.toString(16))
-                    Log.d(TAG, "beaconData - manufacturer: " + beacon.manufacturer.toString(16))
-                    Log.d(TAG, "beaconData - parserIdentifier: " + beacon.parserIdentifier?.toString())
 
-                    // create object for newly discovered thing
-                    val thing = Thing(
-                        beacon.id1.toString() + "-" + beacon.id2.toString() + "-" + beacon.id3.toString(),
-                        beacon.bluetoothName ?: "Bluetooth name not found",
-                        "",
-                        beacon.id1.toString(),
-                        beacon.id2.toInt(),
-                        beacon.id3.toInt(),
-                        beacon.bluetoothName ?: "unknown beacon",
-                        beacon.distance,
-                        beacon.beaconTypeCode,
-                        beacon.bluetoothAddress,
-                        beacon.rssi,
-                        beacon.txPower,
-                        true,
-                        Date(), // lastSeen
-                        Date(0), // lastQueried
-                        Date(0), // lastTriedToQuery
-                        Date(0), // lastRecommended
-                        Date(0) // lastCheckedForRecommendation
-                    )
+                    Log.d(TAG, "Running for beac: ${beacon.toString()}")
 
-                    rangedBeacons.add(thing)
+                    // filter out some of the test beacons
+                    if(
+                        beacon.id1.toString() != "00000000-0000-0000-0000-000000000000" &&
+                        beacon.id1.toString() != "490385fd-427d-42ae-9198-3b27b6dfd1c8" &&
+                        beacon.id1.toString() != "18bd9ed1-1c6e-4419-8204-e924d68d065e" &&
+                        beacon.id1.toString() != "cb443d13-f04e-49f4-a973-944d13cf3a67"
+                    ) {
 
-                    // insert object into database
-                    GlobalScope.launch(Dispatchers.IO) {
 
-                        val thingInDatabase = thingRepository.getThing(thing.id)
+                        /*
+                        try {
+                            if(beacon.id1 != null) Log.d(TAG,"beaconData - id1: " + beacon.id1.toString())
+                            if(beacon.id2 != null) Log.d(TAG,"beaconData - id2: " + beacon.id2.toString())
+                            //if(beacon.id3 != null) Log.d(TAG,"beaconData - id3: " + beacon.id3.toString())
+                            if(beacon.bluetoothName != null) Log.d(TAG,"beaconData - bluetoothName: " + beacon.bluetoothName)
+                            if(beacon.distance != null) Log.d(TAG,"beaconData - distance: " + beacon.distance)
+                            Log.d(TAG, "beaconData - dataFields: " + beacon.dataFields?.toString())
+                            Log.d(TAG, "beaconData - extraDataFields: " + beacon.extraDataFields?.toString())
+                            Log.d(TAG, "beaconData - beaconTypeCode: " + beacon.beaconTypeCode.toString(16))
+                            Log.d(TAG, "beaconData - manufacturer: " + beacon.manufacturer.toString(16))
+                            Log.d(TAG, "beaconData - parserIdentifier: " + beacon.parserIdentifier?.toString())
+                            if(beacon.bluetoothAddress != null) Log.d(TAG,"beaconData - bluetoothAddress: " + beacon.bluetoothAddress)
+                        } catch(e: IndexOutOfBoundsException) {
+                            Log.d(TAG, "IndexOutOfBoundsException")
+                        }
+                        */
 
-                        if (thingInDatabase != null) {
-                            //if beacon is known already, just update inRange status and connectivity details
-                            thingRepository.updateBluetoothData(thing)
-                        } else {
-                            //if beacon is new, insert entire object
-                            thingRepository.insert(thing)
+                        // create object for newly discovered thing
+                        var beaconType = ""
+                        var beaconId = ""
+                        var beaconIdNew = ""
+                        var iBeaconUuid = ""
+                        var iBeaconMajor = 0
+                        var iBeaconMinor = 0
+                        var eddystoneNamespaceId = ""
+                        var eddystoneInstanceId = ""
+
+                        //check if there is an active experiment and if yes, modify the thing's ID
+                        var scenarioForId = ""
+                        val experimentCurrentRun = sharedPrefs.getInt("experimentCurrentRun", 0)
+                        val experimentCurrentScenario = sharedPrefs.getString("experimentCurrentScenario", "")
+
+                        if(experimentCurrentRun > 0 && experimentCurrentScenario != "") {
+                            scenarioForId = "-$experimentCurrentScenario"
                         }
 
-                        // get network data for beacon
-                        // only query if
-                        //  - user is logged in AND
-                        //  - never fetched successfully and last query is at least 1 minute ago or
-                        //  - previously fetched successfully but last fetch is older than 10 minutes
-                        if(loginRepository.isLoggedIn() && (
-                            (thingInDatabase != null && thingInDatabase.lastQueried!!.time == 0L && thingInDatabase.lastTriedToQuery!!.time < Date().time - 60 * 1000) ||
-                            (thingInDatabase != null && thingInDatabase.lastQueried!!.time != 0L && thingInDatabase.lastQueried!!.time < Date().time - 10 * 60 * 1000)
-                        )) {
-                            try {
-                                Log.d(TAG, "getting thing ${thing.id}")
-                                Log.d(TAG, "lastQueried: ${thingInDatabase.lastQueried}")
-                                Log.d(TAG, "lastTriedToQuery: ${thingInDatabase.lastTriedToQuery}")
+                        if (beacon.beaconTypeCode.toString(16) == "215") {
+                            beaconType = "BCN_I"
+                            beaconId =
+                                beacon.id1.toString() + "-" + beacon.id2.toString() + "-" + beacon.id3.toString() + scenarioForId
+                            iBeaconUuid = beacon.id1.toString()
+                            iBeaconMajor = beacon.id2.toInt()
+                            iBeaconMinor = beacon.id3.toInt()
+                        } else {
+                            beaconType = "BCN_EDDY"
+                            beaconId = beacon.id1.toString() + "-" + beacon.id2.toString() + scenarioForId
+                            eddystoneNamespaceId = beacon.id1.toString()
+                            eddystoneInstanceId = beacon.id2.toString()
+                        }
 
-                                val result = iotRecApi.getThing(thing.id)
 
-                                // if successful, update database object
-                                if (result.isSuccessful) {
-                                    val resultThing = result.body()
 
-                                    if (resultThing != null) {
-                                        thingRepository.updateBackendData(
-                                            resultThing.id,
-                                            resultThing.title,
-                                            resultThing.description!!,
-                                            Date(),
-                                            Date(),
-                                            Date(0),
-                                            Date(0)
+                        Log.d(TAG, "beacId is ${beaconId}")
+
+
+
+
+                        val thing = Thing(
+                            beaconId,
+                            beaconType,
+                            beacon.bluetoothName ?: "Bluetooth Device",
+                            "",
+                            iBeaconUuid,
+                            iBeaconMajor,
+                            iBeaconMinor,
+                            eddystoneNamespaceId,
+                            eddystoneInstanceId,
+                            beacon.bluetoothName ?: "unknown beacon",
+                            beacon.distance,
+                            beacon.beaconTypeCode,
+                            beacon.bluetoothAddress,
+                            beacon.rssi,
+                            beacon.txPower,
+                            true,
+                            Date(), // lastSeen
+                            Date(0), // lastQueried
+                            Date(0), // lastTriedToQuery
+                            Date(0), // lastRecommended
+                            Date(0), // lastCheckedForRecommendation
+                            "",
+                            "",
+                            0,
+                            false
+                        )
+
+                        rangedBeacons.add(thing)
+
+                        // insert object into database
+                        GlobalScope.launch(Dispatchers.IO) {
+
+                            val thingInDatabase = thingRepository.getThing(thing.id)
+
+                            if (thingInDatabase != null) {
+                                if((thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000 >= 30 && (thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000 < 90) {
+                                    Log.d(TAG, "Found already active thing in database, last seen " + ((thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000).toString() + " seconds ago: " + thing.id.toString())
+                                } else if((thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000 >= 90) {
+                                    Log.d(TAG, "Found inactive thing in database, last seen " + ((thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000).toString() + " seconds ago: " + thing.id.toString())
+                                }
+                                //if beacon is known already, just update inRange status and connectivity details
+                                thingRepository.updateBluetoothData(thing)
+                            } else {
+                                Log.d(TAG, "Found new thing: " + thing.id.toString())
+                                //if beacon is new, insert entire object
+                                thingRepository.insert(thing)
+                            }
+
+                            // get network data for beacon
+                            // only query if
+                            //  - user is logged in AND
+                            //  - never fetched successfully and last query is at least 10 seconds ago or
+                            //  - previously fetched successfully but last fetch is older than 1 minute
+                            if (loginRepository.isLoggedIn() && (
+                                        (thingInDatabase != null && thingInDatabase.lastQueried!!.time == 0L && thingInDatabase.lastTriedToQuery!!.time < Date().time - 1 * 10 * 1000) ||
+                                                (thingInDatabase != null && thingInDatabase.lastQueried!!.time != 0L && thingInDatabase.lastQueried!!.time < Date().time - 1 * 60 * 1000)
                                         )
+                            ) {
+                                try {
+
+                                    Log.d(TAG, "getting thing ${thing.id}")
+
+                                    val result = iotRecApi.getThing(thing.id)
+
+                                    // if successful, update database object
+                                    if (result.isSuccessful) {
+                                        val resultThing = result.body()
+
+                                        if (resultThing != null) {
+                                            thingRepository.updateBackendData(
+                                                resultThing.id,
+                                                resultThing.title,
+                                                resultThing.description!!,
+                                                Date(),
+                                                Date(),
+                                                Date(0),
+                                                Date(0),
+                                                if (resultThing.image != null) {
+                                                    resultThing.image
+                                                } else {
+                                                    ""
+                                                }!!,
+                                                if (resultThing.categories != null) {
+                                                    resultThing.categories
+                                                } else {
+                                                    ""
+                                                }!!,
+                                                resultThing.occupation
+                                            )
+                                        } else {
+                                            // only update "lastTriedToQuery"
+                                            thingRepository.updateBackendData(
+                                                thingInDatabase.id,
+                                                thingInDatabase.title,
+                                                thingInDatabase.description!!,
+                                                Date(0),
+                                                Date(),
+                                                Date(0),
+                                                Date(0),
+                                                if (thingInDatabase.image != null) {
+                                                    thingInDatabase.image
+                                                } else {
+                                                    ""
+                                                }!!,
+                                                "",
+                                                thingInDatabase.occupation
+                                            )
+                                        }
+
+                                        Log.d(TAG, thingRepository.getThing(thing.id).toString())
                                     } else {
                                         // only update "lastTriedToQuery"
                                         thingRepository.updateBackendData(
@@ -304,44 +443,196 @@ class IotRecApplication : Application(), BeaconConsumer {
                                             Date(0),
                                             Date(),
                                             Date(0),
-                                            Date(0)
+                                            Date(0),
+                                            if (thingInDatabase.image != null) {
+                                                thingInDatabase.image
+                                            } else {
+                                                ""
+                                            }!!,
+                                            "",
+                                            thingInDatabase.occupation
                                         )
                                     }
-
-                                    Log.d(TAG, thingRepository.getThing(thing.id).toString())
-                                } else {
-                                    // only update "lastTriedToQuery"
-                                    thingRepository.updateBackendData(
-                                        thingInDatabase.id,
-                                        thingInDatabase.title,
-                                        thingInDatabase.description!!,
-                                        Date(0),
-                                        Date(),
-                                        Date(0),
-                                        Date(0)
-                                    )
+                                    //} catch(e: SocketTimeoutException) {
+                                    //    Log.d(TAG, e.toString())
+                                    //} catch(e: ConnectException) {
+                                    //    // show snackbar to notify of failed connection
+                                    //    sendBroadcast(R.string.network_failed.toString())
+                                } catch (e: Throwable) {
+                                    Log.d(TAG, e.toString())
+                                    //sendBroadcast(e.toString())
                                 }
-                                //} catch(e: SocketTimeoutException) {
-                                //    Log.d(TAG, e.toString())
-                                //} catch(e: ConnectException) {
-                                //    // show snackbar to notify of failed connection
-                                //    sendBroadcast(R.string.network_failed.toString())
-                            } catch(e: Throwable) {
-                                //TODO get more information from Throwable and send appropriate broadcast
-                                Log.d(TAG, e.toString())
-                                //sendBroadcast(e.toString())
+                            }
+                        }
+
+                        // check if item is to be recommended
+                        //ContextCompat.startForegroundService(applicationContext, Intent(applicationContext, RecommendationCheckerService()::class.java))
+                        //startService(Intent(applicationContext, RecommendationCheckerService()::class.java))
+
+                        val recommendationCheckerServiceIntent =
+                            Intent(applicationContext, RecommendationCheckerService()::class.java)
+                        recommendationCheckerServiceIntent.putExtra("thingId", thing.id)
+                        startService(recommendationCheckerServiceIntent)
+
+
+
+
+
+
+
+                        /*
+                        val thing = Thing(
+                            beaconId,
+                            beaconType,
+                            beacon.bluetoothName ?: "Bluetooth Device",
+                            "",
+                            iBeaconUuid,
+                            iBeaconMajor,
+                            iBeaconMinor,
+                            eddystoneNamespaceId,
+                            eddystoneInstanceId,
+                            beacon.bluetoothName ?: "unknown beacon",
+                            beacon.distance,
+                            beacon.beaconTypeCode,
+                            beacon.bluetoothAddress,
+                            beacon.rssi,
+                            beacon.txPower,
+                            true,
+                            Date(), // lastSeen
+                            Date(0), // lastQueried
+                            Date(0), // lastTriedToQuery
+                            Date(0), // lastRecommended
+                            Date(0), // lastCheckedForRecommendation
+                            "",
+                            "",
+                            0,
+                            false
+                        )
+
+                        rangedBeacons.add(thing)
+
+                        // insert object into database
+                        GlobalScope.launch(Dispatchers.IO) {
+
+                            val thingInDatabase = thingRepository.getThing(thing.id)
+
+                            if (thingInDatabase != null) {
+                                if((thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000 >= 30 && (thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000 < 90) {
+                                    Log.d(TAG, "Found already active thing in database, last seen " + ((thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000).toString() + " seconds ago: " + thing.id.toString())
+                                } else if((thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000 >= 90) {
+                                    Log.d(TAG, "Found inactive thing in database, last seen " + ((thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000).toString() + " seconds ago: " + thing.id.toString())
+                                }
+                                //if beacon is known already, just update inRange status and connectivity details
+                                thingRepository.updateBluetoothData(thing)
+                            } else {
+                                Log.d(TAG, "Found new thing: " + thing.id.toString())
+                                //if beacon is new, insert entire object
+                                thingRepository.insert(thing)
                             }
 
+                            // get network data for beacon
+                            // only query if
+                            //  - user is logged in AND
+                            //  - never fetched successfully and last query is at least 10 seconds ago or
+                            //  - previously fetched successfully but last fetch is older than 1 minute
+                            if (loginRepository.isLoggedIn() && (
+                                        (thingInDatabase != null && thingInDatabase.lastQueried!!.time == 0L && thingInDatabase.lastTriedToQuery!!.time < Date().time - 1 * 10 * 1000) ||
+                                        (thingInDatabase != null && thingInDatabase.lastQueried!!.time != 0L && thingInDatabase.lastQueried!!.time < Date().time - 1 * 60 * 1000)
+                                        )
+                            ) {
+                                try {
+
+                                    Log.d(TAG, "getting thing ${thing.id}")
+
+                                    val result = iotRecApi.getThing(thing.id)
+
+                                    // if successful, update database object
+                                    if (result.isSuccessful) {
+                                        val resultThing = result.body()
+
+                                        if (resultThing != null) {
+                                            thingRepository.updateBackendData(
+                                                resultThing.id,
+                                                resultThing.title,
+                                                resultThing.description!!,
+                                                Date(),
+                                                Date(),
+                                                Date(0),
+                                                Date(0),
+                                                if (resultThing.image != null) {
+                                                    resultThing.image
+                                                } else {
+                                                    ""
+                                                }!!,
+                                                if (resultThing.categories != null) {
+                                                    resultThing.categories
+                                                } else {
+                                                    ""
+                                                }!!,
+                                                resultThing.occupation
+                                            )
+                                        } else {
+                                            // only update "lastTriedToQuery"
+                                            thingRepository.updateBackendData(
+                                                thingInDatabase.id,
+                                                thingInDatabase.title,
+                                                thingInDatabase.description!!,
+                                                Date(0),
+                                                Date(),
+                                                Date(0),
+                                                Date(0),
+                                                if (thingInDatabase.image != null) {
+                                                    thingInDatabase.image
+                                                } else {
+                                                    ""
+                                                }!!,
+                                                "",
+                                                thingInDatabase.occupation
+                                            )
+                                        }
+
+                                        Log.d(TAG, thingRepository.getThing(thing.id).toString())
+                                    } else {
+                                        // only update "lastTriedToQuery"
+                                        thingRepository.updateBackendData(
+                                            thingInDatabase.id,
+                                            thingInDatabase.title,
+                                            thingInDatabase.description!!,
+                                            Date(0),
+                                            Date(),
+                                            Date(0),
+                                            Date(0),
+                                            if (thingInDatabase.image != null) {
+                                                thingInDatabase.image
+                                            } else {
+                                                ""
+                                            }!!,
+                                            "",
+                                            thingInDatabase.occupation
+                                        )
+                                    }
+                                    //} catch(e: SocketTimeoutException) {
+                                    //    Log.d(TAG, e.toString())
+                                    //} catch(e: ConnectException) {
+                                    //    // show snackbar to notify of failed connection
+                                    //    sendBroadcast(R.string.network_failed.toString())
+                                } catch (e: Throwable) {
+                                    Log.d(TAG, e.toString())
+                                    //sendBroadcast(e.toString())
+                                }
+                            }
                         }
+
+                        // check if item is to be recommended
+                        //ContextCompat.startForegroundService(applicationContext, Intent(applicationContext, RecommendationCheckerService()::class.java))
+                        //startService(Intent(applicationContext, RecommendationCheckerService()::class.java))
+
+                        val recommendationCheckerServiceIntent =
+                            Intent(applicationContext, RecommendationCheckerService()::class.java)
+                        recommendationCheckerServiceIntent.putExtra("thingId", thing.id)
+                        startService(recommendationCheckerServiceIntent)
+                        */
                     }
-
-                    // check if item is to be recommended
-                    //ContextCompat.startForegroundService(applicationContext, Intent(applicationContext, RecommendationCheckerService()::class.java))
-                    //startService(Intent(applicationContext, RecommendationCheckerService()::class.java))
-
-                    val recommendationCheckerServiceIntent = Intent(applicationContext, RecommendationCheckerService()::class.java)
-                    recommendationCheckerServiceIntent.putExtra("thingId", thing.id)
-                    startService(recommendationCheckerServiceIntent)
                 }
 
                 GlobalScope.launch(Dispatchers.IO) {
@@ -350,11 +641,12 @@ class IotRecApplication : Application(), BeaconConsumer {
                     val databaseBeaconsInRange = thingRepository.getThingsInRangeList()
 
                     // find the ones that are not part of current "beacons" set
-                    // only filter out if beacon hasn't been seen for at least 5 seconds
-                    val beaconsNotInRangeAnymore = databaseBeaconsInRange.filterNot { rangedBeacons.any { x -> x.id == it.id } || (it.lastSeen!!.time > Date().time - 5000)}
+                    // only filter out if beacon hasn't been seen for at least 45 seconds
+                    val beaconsNotInRangeAnymore = databaseBeaconsInRange.filterNot { rangedBeacons.any { x -> x.id == it.id } || (it.lastSeen!!.time > Date().time - 45 * 1000)}
 
                     // set inRange to false for those identified
                     for (beacon in beaconsNotInRangeAnymore) {
+                        //Log.d(TAG, "beacon not in range anymore: " + beacon.id)
                         beacon.inRange = false
 
                         GlobalScope.launch(Dispatchers.IO) {
@@ -369,6 +661,26 @@ class IotRecApplication : Application(), BeaconConsumer {
 
         val region = Region("backgroundRegion", null, null, null)
         beaconManager.startRangingBeaconsInRegion(region)
+    }
+
+    // LocationListener overwrites
+    override fun onLocationChanged(l: Location?) {
+        if (l != null) {
+            Log.d(TAG, "location: " + location.toString())
+            location = l
+        }
+    }
+
+    override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
+
+    }
+
+    override fun onProviderEnabled(provider: String?) {
+
+    }
+
+    override fun onProviderDisabled(provider: String?) {
+
     }
 }
 

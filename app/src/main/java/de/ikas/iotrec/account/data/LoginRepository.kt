@@ -18,9 +18,11 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Types.newParameterizedType
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
+import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
 import de.ikas.iotrec.database.model.Category
 import de.ikas.iotrec.database.model.Preference
 import de.ikas.iotrec.database.repository.*
+import java.util.*
 
 
 /**
@@ -28,9 +30,7 @@ import de.ikas.iotrec.database.repository.*
  * maintains an in-memory cache of login status and user credentials information.
  */
 
-//class LoginRepository(val dataSource: LoginDataSource) {
 class LoginRepository(private val iotRecApi: IotRecApiInit, private val context: Context) {
-//object LoginRepository(private val iotRecApi: IotRecApiInit) {
 
     private val TAG = "LoginRepository"
     private lateinit var app: IotRecApplication
@@ -39,7 +39,9 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
     private lateinit var thingRepository: ThingRepository
     private lateinit var feedbackRepository: FeedbackRepository
     private lateinit var recommendationRepository: RecommendationRepository
-    //private lateinit var ratingRepository: ratingRepository   //TODO
+    private lateinit var ratingRepository: RatingRepository
+    private lateinit var experimentRepository: ExperimentRepository
+    private lateinit var replyRepository: ReplyRepository
 
     // in-memory cache of the user object
     var user: User? = null
@@ -48,25 +50,18 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
     var token: String? = null
         private set
 
-    //val isLoggedIn: Boolean
-    //    get() = user != null
-
     init {
-        // If user credentials will be cached in local storage, it is recommended it be encrypted
-        // @see https://developer.android.com/training/articles/keystore
-
-        // TODO get logged in user from shared prefs
-        //user = null
-
         app = context.applicationContext as IotRecApplication
         categoryRepository = app.categoryRepository
         preferenceRepository = app.preferenceRepository
         thingRepository = app.thingRepository
         feedbackRepository = app.feedbackRepository
         recommendationRepository = app.recommendationRepository
-        //ratingRepository = app.ratingRepository      // TODO
+        ratingRepository = app.ratingRepository
+        experimentRepository = app.experimentRepository
+        replyRepository = app.replyRepository
 
-        val moshi = Moshi.Builder().build()
+        val moshi = Moshi.Builder().add(Date::class.java, Rfc3339DateJsonAdapter().nullSafe()).build()
         val adapter = moshi.adapter(User::class.java)
         val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
         val json = sharedPrefs.getString("user", "{}")
@@ -83,21 +78,23 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
         val editor = sharedPrefs.edit()
         editor.remove("user")
         editor.remove("userToken")
+        editor.remove("experimentCurrentStep")
+        editor.remove("experimentCurrentRun")
         editor.apply()
 
         // empty the preferences table
 
         GlobalScope.launch {
             preferenceRepository.deleteAll()
-            categoryRepository.deleteAll()
             thingRepository.deleteAll()
             recommendationRepository.deleteAll()
             feedbackRepository.deleteAll()
-            //ratingsRepository.deleteAll()   //TODO
+            ratingRepository.deleteAll()
+            experimentRepository.deleteAll()
+            replyRepository.deleteAll()
+
+            // not categories and questions (stay the same)
         }
-
-
-        // TODO anything else to clear?
     }
 
     suspend fun login(username: String, password: String): Response<LoggedInUser> {
@@ -142,17 +139,31 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
 
         // save to SharedPreferences
         saveUser(false)
+
+        // save user preferences to database
+        preferenceRepository.insertMultiple(*this.user!!.preferences.toTypedArray())
+
+        // save experiments to database
+        Log.d(TAG, "inserting experiments")
+        Log.d(TAG, this.user!!.experiments.toString())
+        experimentRepository.insertMultiple(*this.user!!.experiments.toTypedArray())
     }
 
     private suspend fun setRegisteredUser(registeredUser: RegisteredUser) {
         // save to repository (only accessible during lifecycle)
-        this.user = User(registeredUser.id, registeredUser.username, registeredUser.email, registeredUser.preferences)
+        this.user = User(registeredUser.id, registeredUser.username, registeredUser.email, registeredUser.preferences, registeredUser.experiments)
         this.token = registeredUser.token
 
         // save to SharedPreferences
         saveUser(false)
+
+        // save experiments to database
+        Log.d(TAG, "inserting experiments")
+        Log.d(TAG, this.user!!.experiments.toString())
+        experimentRepository.insertMultiple(*this.user!!.experiments.toTypedArray())
     }
 
+    /*
     fun syncUserProfile() {
         // check if a user is logged in
         if(isLoggedIn()) {
@@ -165,11 +176,12 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
             //updateUserToApp function in iotRecApi
         }
     }
+    */
 
     // saves current user object to shared preferences and DB and syncs it to the backend
     suspend fun saveUser(userChangedLocally: Boolean) {
         // shared preferences
-        val moshi = Moshi.Builder().build()
+        val moshi = Moshi.Builder().add(Date::class.java, Rfc3339DateJsonAdapter().nullSafe()).build()
         val adapter = moshi.adapter(User::class.java)
         val json = adapter.toJson(this.user)
         val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
@@ -179,23 +191,14 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
         editor.apply()
 
         // save all preferences of the user to the database
-        for(preference in this.user!!.preferences) {
-            preferenceRepository.insert(preference)
-        }
+        //for(preference in this.user!!.preferences) {
+        //    preferenceRepository.insert(preference)
+        //}
 
         // if user object was changed locally, sync back to server
         if(userChangedLocally) {
             iotRecApi.updateUserFromApp(this.user!!.id, this.user!!)
         }
-
-        //for(preference in this.user!!.preferences) {
-        //    categoryRepository.setCategorySelected(preference, true)
-        //}
-        //Log.d(TAG, this.user!!.preferences.size.toString() + " - " + this.user!!.preferences.toString())
-        // TODO don't do this
-        //categoryRepository.setAllCategoriesSelectedFalse()
-        //val rowsChanged = categoryRepository.setCategoriesSelectedTrue(this.user!!.preferences)
-        //Log.d(TAG, "rowsChanged: $rowsChanged")
     }
 
     // TODO
@@ -214,10 +217,11 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
             Log.d(TAG, preference.toString())
 
             if(value == 0) {
+                // preference is removed
                 Log.d(TAG, "value is 0")
                 Log.d(TAG, this.user!!.preferences.toString())
 
-                if(this.user!!.preferences.any { x -> x.category == preference.category }) {  // TODO does contain work with different values?
+                if(this.user!!.preferences.any { x -> x.category == preference.category }) {
                     val pref = this.user!!.preferences.find { x -> x.category == preference.category }
 
                     Log.d(TAG, "Found existing pref")
@@ -232,23 +236,26 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
             } else {
                 Log.d(TAG, "value is non-zero")
 
+                // preference or dislike is added (or an existing one is toggled to the other value)
                 if(this.user!!.preferences.any { x -> x.category == preference.category }) {
                     Log.d(TAG, "Found existing pref $preference")
 
                     // if a pref has values -1 or 1 and has existed before, update it
                     val pref = this.user!!.preferences.find { x -> x.category == preference.category }
-                    pref!!.value = preference.value // TODO check if this works
+                    pref!!.value = preference.value
 
                     Log.d(TAG, this.user!!.id.toString())
                     Log.d(TAG, pref.category)
                     Log.d(TAG, pref.toString())
 
+                    preferenceRepository.update(preference)
                     iotRecApi.updatePreference(this.user!!.id, pref.category, pref)
                 } else {
                     Log.d(TAG, "did not find existing pref")
 
                     // if a pref has values -1 or 1 and has not existed before, create it
                     this.user!!.preferences.add(preference)
+                    preferenceRepository.insert(preference)
                     iotRecApi.addPreference(this.user!!.id, preference)
                 }
             }

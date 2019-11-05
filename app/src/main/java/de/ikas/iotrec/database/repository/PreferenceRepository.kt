@@ -22,6 +22,16 @@ class PreferenceRepository(private val preferenceDao: PreferenceDao, private val
     }
 
     @WorkerThread
+    suspend fun insertMultiple(vararg preferences: Preference) {
+        preferenceDao.insertMultiple(*preferences)
+    }
+
+    @WorkerThread
+    suspend fun update(preference: Preference) {
+        preferenceDao.update(preference)
+    }
+
+    @WorkerThread
     suspend fun delete(preferenceId: String) {
         preferenceDao.delete(preferenceId)
     }
@@ -44,5 +54,10 @@ class PreferenceRepository(private val preferenceDao: PreferenceDao, private val
     @WorkerThread
     fun getCurrentPreferences(): LiveData<List<Preference>> {
         return preferenceDao.getCurrentPreferences()
+    }
+
+    @WorkerThread
+    suspend fun getCurrentPreferencesList(): List<Preference> {
+        return preferenceDao.getCurrentPreferencesList()
     }
 }

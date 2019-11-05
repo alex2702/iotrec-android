@@ -6,14 +6,18 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
 import de.ikas.iotrec.database.dao.*
 import de.ikas.iotrec.database.model.*
-//import de.ikas.iotrec.database.dao.VenueDao
+import de.ikas.iotrec.database.util.ArrayListConverter
 import de.ikas.iotrec.database.util.DateTypeConverter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [Thing::class, Category::class, Preference::class, Recommendation::class, Feedback::class], version = 17)
-@TypeConverters(DateTypeConverter::class)
+@Database(entities = [
+    Thing::class, Category::class, Preference::class, Recommendation::class,
+    Feedback::class, Rating::class, Experiment::class, Question::class,
+    Reply::class
+], version = 33)
+@TypeConverters(DateTypeConverter::class, ArrayListConverter::class/*, ListConverter::class*/)
 public abstract class IotRecDatabase : RoomDatabase() {
 
     companion object {
@@ -41,12 +45,14 @@ public abstract class IotRecDatabase : RoomDatabase() {
     }
 
     abstract fun thingDao(): ThingDao
-    //abstract fun venueDao(): VenueDao
     abstract fun categoryDao(): CategoryDao
     abstract fun preferenceDao(): PreferenceDao
     abstract fun recommendationDao(): RecommendationDao
     abstract fun feedbackDao(): FeedbackDao
-
+    abstract fun ratingDao(): RatingDao
+    abstract fun experimentDao(): ExperimentDao
+    abstract fun questionDao(): QuestionDao
+    abstract fun replyDao(): ReplyDao
 
     override fun createOpenHelper(config: DatabaseConfiguration?): SupportSQLiteOpenHelper {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -76,24 +82,6 @@ public abstract class IotRecDatabase : RoomDatabase() {
         // when starting the app, remove all Things from the database (we have to re-scan for nearby Things)
         fun populateDatabase(thingDao: ThingDao) {
             thingDao.deleteAll()
-
-            /*
-            val thing = Thing(
-                "bd03a13f-54c7-4443-b6a3-93fbdcd5ff03-1-2",
-                "bla bla bla",
-                "",
-                "bd03a13f-54c7-4443-b6a3-93fbdcd5ff03",
-                1,
-                2,
-                "bluetooth name",
-                1.25,
-                123,
-                "mac address",
-                5,
-                50
-            )
-            thingDao.insert(thing)
-            */
         }
     }
 }

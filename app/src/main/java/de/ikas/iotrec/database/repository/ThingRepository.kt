@@ -46,8 +46,8 @@ class ThingRepository(private val thingDao: ThingDao) {
     }
 
     @WorkerThread
-    suspend fun updateBackendData(id: String, title: String, description: String, lastQueried: Date, lastTriedToQuery: Date, lastRecommended: Date, lastCheckedForRecommendation: Date) {
-        return thingDao.updateBackendData(id, title, description, lastQueried, lastTriedToQuery, lastRecommended, lastCheckedForRecommendation)
+    suspend fun updateBackendData(id: String, title: String, description: String, lastQueried: Date, lastTriedToQuery: Date, lastRecommended: Date, lastCheckedForRecommendation: Date, image: String, categories: String, occupation: Int) {
+        return thingDao.updateBackendData(id, title, description, lastQueried, lastTriedToQuery, lastRecommended, lastCheckedForRecommendation, image, categories, occupation)
     }
 
     @WorkerThread
@@ -63,5 +63,10 @@ class ThingRepository(private val thingDao: ThingDao) {
     @WorkerThread
     fun deleteAll() {
         thingDao.deleteAll()
+    }
+
+    @WorkerThread
+    suspend fun setRecommendationQueryRunning(id: String, queryRunning: Boolean) {
+        return thingDao.setRecommendationQueryRunnng(id, queryRunning)
     }
 }

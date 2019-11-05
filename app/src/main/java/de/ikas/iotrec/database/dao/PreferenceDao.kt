@@ -11,8 +11,14 @@ interface PreferenceDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(preference: Preference)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMultiple(vararg preferences: Preference)
+
     @Query("DELETE FROM preference_table WHERE category = :preferenceId")
     suspend fun delete(preferenceId: String)
+
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun update(preference: Preference)
 
     @Query("DELETE FROM preference_table")
     fun deleteAll()
@@ -25,4 +31,7 @@ interface PreferenceDao {
 
     @Query("SELECT * FROM preference_table")
     fun getCurrentPreferences(): LiveData<List<Preference>>
+
+    @Query("SELECT * FROM preference_table")
+    suspend fun getCurrentPreferencesList(): List<Preference>
 }

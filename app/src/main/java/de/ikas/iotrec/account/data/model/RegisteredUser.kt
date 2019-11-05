@@ -1,6 +1,7 @@
 package de.ikas.iotrec.account.data.model
 
 import com.squareup.moshi.Json
+import de.ikas.iotrec.database.model.Experiment
 import de.ikas.iotrec.database.model.Preference
 
 /**
@@ -20,5 +21,8 @@ data class RegisteredUser(
     val email: String,
 
     @field:Json(name = "preferences")
-    val preferences: MutableList<Preference>
+    val preferences: MutableList<Preference>,
+
+    @field:Json(name = "experiments")
+    val experiments: MutableList<Experiment>
 )
