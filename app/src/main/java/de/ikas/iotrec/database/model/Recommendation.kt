@@ -22,10 +22,9 @@ data class Recommendation(
     @Json(name = "invoke_rec")
     var invokeRec: Boolean,
 
-    //var context: Context
-
-
     var context_temperature_raw: Int,
     var context_weather_raw: String,
-    var context_length_of_trip_raw: Int
+    var context_length_of_trip_raw: Int,
+    var context_time_of_day_raw: String?,
+    var context_crowdedness_raw: String?
 ) : Parcelable

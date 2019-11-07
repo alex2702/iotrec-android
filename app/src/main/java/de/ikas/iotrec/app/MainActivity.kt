@@ -80,7 +80,6 @@ class MainActivity :
     lateinit var userPreferences: MutableList<Preference>
     var userPreferencesToBeAdded = mutableListOf<String>()
     var userPreferencesToBeRemoved = mutableListOf<String>()
-    //private var preferenceDialogListener: OnPreferenceDialogFragmentInteractionListener? = null
     lateinit var experimentRepository: ExperimentRepository
     lateinit var replyRepository: ReplyRepository
 

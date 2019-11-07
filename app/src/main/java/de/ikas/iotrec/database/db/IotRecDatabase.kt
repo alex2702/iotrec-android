@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
     Thing::class, Category::class, Preference::class, Recommendation::class,
     Feedback::class, Rating::class, Experiment::class, Question::class,
     Reply::class
-], version = 33)
+], version = 35)
 @TypeConverters(DateTypeConverter::class, ArrayListConverter::class/*, ListConverter::class*/)
 public abstract class IotRecDatabase : RoomDatabase() {
 

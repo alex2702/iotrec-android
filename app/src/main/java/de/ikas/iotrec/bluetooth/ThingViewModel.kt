@@ -22,10 +22,4 @@ class ThingViewModel public constructor(application: Application) : AndroidViewM
         repository = ThingRepository(thingsDao)
         allThingsInRange = repository.allThingsInRange
     }
-
-    /*
-    fun insert(thing: Thing) = viewModelScope.launch(Dispatchers.IO) {
-        repository.insert(thing)
-    }
-    */
 }

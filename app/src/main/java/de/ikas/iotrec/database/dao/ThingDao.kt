@@ -20,6 +20,14 @@ interface ThingDao {
     @Query("SELECT * from thing_table WHERE inRange = 1 ORDER BY distance ASC, lastQueried DESC, lastSeen DESC")
     fun getThingsInRange(): LiveData<List<Thing>>
 
+    // only return the things that are in range have been seen at most 45 seconds ago
+    // TODO
+    // strftime('%Y-%m-%d-%H-%M-%S', datetime(lastSeen)) > strftime('%Y-%m-%d-%H-%M-%S', datetime(date('now', '-100 Second')))
+    // lastSeen > :lastSeenAfter
+    //@Query("SELECT * from thing_table WHERE toDisplay = 1 ORDER BY distance ASC, lastQueried DESC, lastSeen DESC")
+    //fun getThingsInRangeRecently(lastSeenAfter: Date): LiveData<List<Thing>>
+    //fun getThingsToDisplay(): LiveData<List<Thing>>
+
     @Query("SELECT * from thing_table WHERE inRange = 1 ORDER BY distance ASC, lastQueried DESC, lastSeen DESC")
     fun getThingsInRangeList(): List<Thing>
 

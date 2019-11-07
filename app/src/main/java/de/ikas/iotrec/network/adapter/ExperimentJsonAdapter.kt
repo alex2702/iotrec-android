@@ -29,11 +29,16 @@ internal class ExperimentJsonAdapter {
             experimentJson.preferences_active,
             experimentJson.order,
             experimentJson.scenario,
-            experimentJson.context.weather_raw,
-            experimentJson.context.temperature_raw,
-            experimentJson.context.length_of_trip_raw,
-            experimentJson.context.time_of_day_raw,
-            experimentJson.context.crowdedness_raw
+            //experimentJson.context.weather_raw,
+            //experimentJson.context.temperature_raw,
+            //experimentJson.context.length_of_trip_raw,
+            //experimentJson.context.time_of_day_raw,
+            //experimentJson.context.crowdedness_raw
+            "CLOUDY",
+            10,
+            180,
+            "NOON",
+            null
         )
         return experiment
     }

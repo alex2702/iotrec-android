@@ -42,6 +42,7 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
     private lateinit var ratingRepository: RatingRepository
     private lateinit var experimentRepository: ExperimentRepository
     private lateinit var replyRepository: ReplyRepository
+    private lateinit var questionRepository: QuestionRepository
 
     // in-memory cache of the user object
     var user: User? = null
@@ -60,6 +61,7 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
         ratingRepository = app.ratingRepository
         experimentRepository = app.experimentRepository
         replyRepository = app.replyRepository
+        questionRepository = app.questionRepository
 
         val moshi = Moshi.Builder().add(Date::class.java, Rfc3339DateJsonAdapter().nullSafe()).build()
         val adapter = moshi.adapter(User::class.java)
@@ -92,8 +94,8 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
             ratingRepository.deleteAll()
             experimentRepository.deleteAll()
             replyRepository.deleteAll()
-
-            // not categories and questions (stay the same)
+            categoryRepository.deleteAll()
+            questionRepository.deleteAll()
         }
     }
 
