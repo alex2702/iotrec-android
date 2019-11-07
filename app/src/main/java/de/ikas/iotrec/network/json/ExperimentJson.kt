@@ -11,5 +11,5 @@ data class ExperimentJson(
     var preferences_active: Boolean,
     var order: Int,
     var scenario: String,
-    var context: Context
+    var context: Context?
 )

@@ -21,7 +21,9 @@ internal class RecommendationJsonAdapter {
             recommendationJson.invoke_rec,
             recommendationJson.context.temperature_raw,
             recommendationJson.context.weather_raw,
-            recommendationJson.context.length_of_trip_raw
+            recommendationJson.context.length_of_trip_raw,
+            recommendationJson.context.time_of_day_raw,
+            recommendationJson.context.crowdedness_raw
         )
         return recommendation
     }
@@ -37,8 +39,8 @@ internal class RecommendationJsonAdapter {
                 recommendation.context_temperature_raw,
                 recommendation.context_weather_raw,
                 recommendation.context_length_of_trip_raw,
-                null,
-                null
+                recommendation.context_time_of_day_raw,
+                recommendation.context_crowdedness_raw
             )
         )
         return json

@@ -325,24 +325,24 @@ class ExperimentFragment : Fragment() {
                         textViewLot.text = "You've been on the move for ${hoursOnTheMove}."
 
                         //after button click
-                        val button =
-                            views[indexToShow].findViewById<Button>(R.id.perform_test_run_button)
+                        val button = views[indexToShow].findViewById<Button>(R.id.perform_test_run_button)
                         button.setOnClickListener {
                             //show "are you sure?" dialog
                             val builder = AlertDialog.Builder((activity as Activity))
                             builder
-                                .setMessage(
-                                    "Do you want to finish the test run?"
-                                )
+                                .setMessage("Do you want to finish the test run?")
                                 .setPositiveButton("Yes, finish") { _, _ ->
                                     //update experiment via API (end date)
                                     currentExperiment.end = Date()
                                     GlobalScope.launch {
-                                        val result =
-                                            mainActivity.experimentRepository.updateExperiment(
-                                                currentExperiment
-                                            )
+                                        val result = mainActivity.experimentRepository.updateExperiment(currentExperiment)
                                         Log.d(TAG, result.toString())
+
+                                        // clear all things, recommendations, feedbacks and ratings to provide a fresh base for the next run
+                                        app.thingRepository.deleteAll()
+                                        app.recommendationRepository.deleteAll()
+                                        app.feedbackRepository.deleteAll()
+                                        app.ratingRepository.deleteAll()
                                     }
 
                                     val editor = sharedPrefs.edit()

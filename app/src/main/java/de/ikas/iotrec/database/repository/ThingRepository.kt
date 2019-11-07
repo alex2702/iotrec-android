@@ -8,6 +8,7 @@ import java.util.*
 
 class ThingRepository(private val thingDao: ThingDao) {
     val allThings: LiveData<List<Thing>> = thingDao.getAllThings()
+    //val allThingsInRange: LiveData<List<Thing>> = thingDao.getThingsInRangeRecently(Date(Date().time - 60 * 1000))
     val allThingsInRange: LiveData<List<Thing>> = thingDao.getThingsInRange()
 
     @WorkerThread
