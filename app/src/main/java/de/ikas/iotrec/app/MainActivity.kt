@@ -183,6 +183,8 @@ class MainActivity :
 
             val resultQ = app.iotRecApi.getQuestions()
 
+            Log.d(TAG, resultQ.toString())
+
             // if successful, update database
             if (resultQ.isSuccessful) {
                 val resultQuestions = resultQ.body()
@@ -461,9 +463,9 @@ class MainActivity :
     override fun onPreferenceListFragmentInteraction(category: Category) {
         Log.d(TAG, "a preference list item was clicked")
 
-        GlobalScope.launch {
-            loginRepository.saveUser(true)
-        }
+        //GlobalScope.launch {
+        //    loginRepository.saveUser(true)
+        //}
 
         // load dialog fragment to select sub-categories
         //val fragmentTransaction = supportFragmentManager.beginTransaction()

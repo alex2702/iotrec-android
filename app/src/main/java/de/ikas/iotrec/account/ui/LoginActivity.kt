@@ -104,6 +104,17 @@ class LoginActivity : AppCompatActivity(), SignupFragment.OnFragmentInteractionL
                         app.categoryRepository.insertMultiple(*resultCategories!!.toTypedArray())
                         Log.d(TAG, "inserted categories")
                     }
+
+                    val resultQ = app.iotRecApi.getQuestions()
+
+                    Log.d(TAG, resultQ.toString())
+
+                    // if successful, update database
+                    if (resultQ.isSuccessful) {
+                        val resultQuestions = resultQ.body()
+                        Log.d(TAG, resultQuestions.toString())
+                        app.questionRepository.insertMultiple(*resultQuestions!!.toTypedArray())
+                    }
                 }
 
                 //runOnUiThread {

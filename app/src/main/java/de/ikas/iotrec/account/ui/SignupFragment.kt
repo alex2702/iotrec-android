@@ -7,6 +7,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -22,7 +23,12 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 
 import de.ikas.iotrec.R
+import de.ikas.iotrec.app.IotRecApplication
 import de.ikas.iotrec.app.ProfileFragment
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 
 /**
@@ -37,11 +43,19 @@ import de.ikas.iotrec.app.ProfileFragment
 class SignupFragment : Fragment() {
 
     private var listener: OnFragmentInteractionListener? = null
-
+    private val TAG = "SignupFragment"
     private lateinit var signupViewModel: LoginViewModel
+
+    private lateinit var loginActivity: LoginActivity
+    private lateinit var app: IotRecApplication
+    private val job = Job()
+    private val scope = CoroutineScope(Dispatchers.Main + job)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        loginActivity = activity as LoginActivity
+        app = loginActivity.application as IotRecApplication
     }
 
     override fun onCreateView(
@@ -87,6 +101,36 @@ class SignupFragment : Fragment() {
                 showSignupFailed(signupResult.error)
             }
             if (signupResult.success != null) {
+
+                scope.launch {
+                    Log.d(TAG, "launched")
+                    //sync categories
+                    val result = app.iotRecApi.getCategories()
+                    Log.d(TAG, "got result from getCategories")
+
+                    // if successful, update database object
+                    if (result.isSuccessful) {
+                        Log.d(TAG, "result successful")
+                        val resultCategories = result.body()
+                        Log.d(TAG, resultCategories.toString())
+
+                        // insert categories into database
+                        app.categoryRepository.insertMultiple(*resultCategories!!.toTypedArray())
+                        Log.d(TAG, "inserted categories")
+                    }
+
+                    val resultQ = app.iotRecApi.getQuestions()
+
+                    Log.d(TAG, resultQ.toString())
+
+                    // if successful, update database
+                    if (resultQ.isSuccessful) {
+                        val resultQuestions = resultQ.body()
+                        Log.d(TAG, resultQuestions.toString())
+                        app.questionRepository.insertMultiple(*resultQuestions!!.toTypedArray())
+                    }
+                }
+
                 // show success message and profile tab
                 updateUiWithUser(signupResult.success)
 
