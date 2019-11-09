@@ -26,5 +26,6 @@ data class Recommendation(
     var context_weather_raw: String,
     var context_length_of_trip_raw: Int,
     var context_time_of_day_raw: String?,
-    var context_crowdedness_raw: String?
+    var context_crowdedness_raw: String?,
+    var experiment: Int?
 ) : Parcelable

@@ -7,5 +7,6 @@ data class RecommendationJson(
     var thing: String,
     var score: Float,
     var invoke_rec: Boolean,
-    var context: Context
+    var context: Context,
+    var experiment: Int?
 )

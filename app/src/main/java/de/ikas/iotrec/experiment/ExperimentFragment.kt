@@ -284,7 +284,7 @@ class ExperimentFragment : Fragment() {
                         val textViewScenario =
                             views[indexToShow].findViewById<TextView>(R.id.perform_test_run_scenario)
                         textViewCounter.text = "${testRunWithinScenario}/2"
-                        if (currentExperiment.scenario == "jobfair") {
+                        if (currentExperiment != null && currentExperiment.scenario == "jobfair") {
                             textViewScenario.text = "Job Fair"
                             textViewScenario.background = ContextCompat.getDrawable(
                                 mainActivity,
@@ -301,7 +301,7 @@ class ExperimentFragment : Fragment() {
                         //update context (weather, temp, tod, lot) from experiment (use raw values for temp and lot)
                         val textViewWeather =
                             views[indexToShow].findViewById<TextView>(R.id.perform_test_run_weather)
-                        if(currentExperiment.context_weather == "SUNNY") {
+                        if(currentExperiment != null && currentExperiment.context_weather == "SUNNY") {
                             textViewWeather.text = "Sunny/Clear"
                         } else {
                             textViewWeather.text = currentExperiment.context_weather.toLowerCase().capitalize()
