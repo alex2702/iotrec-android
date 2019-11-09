@@ -331,7 +331,7 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
                             val thingExistsInDatabase = thingInDatabase != null
 
                             if (thingExistsInDatabase) {
-                                Log.d(TAG, "Found existing thing")
+                                //Log.d(TAG, "Found existing thing")
 
                                 val thingWasSeenGTE30SecondsAgo = (thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000 >= 30
                                 val thingWasSeenLT90SecondsAgo = (thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000 < 90
@@ -345,7 +345,7 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
                                 //if beacon is known already, just update inRange status and connectivity details
                                 thingRepository.updateBluetoothData(thing)
                             } else {
-                                Log.d(TAG, "Found new thing: " + thing.id.toString())
+                                //Log.d(TAG, "Found new thing: " + thing.id.toString())
                                 //if beacon is new, insert entire object
                                 thingRepository.insert(thing)
                             }
@@ -368,7 +368,7 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
                             ) {
                                 try {
 
-                                    Log.d(TAG, "getting thing ${thing.id}")
+                                    //Log.d(TAG, "getting thing ${thing.id}")
 
                                     val result = iotRecApi.getThing(thing.id)
 

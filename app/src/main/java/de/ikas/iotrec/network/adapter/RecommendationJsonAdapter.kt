@@ -23,7 +23,8 @@ internal class RecommendationJsonAdapter {
             recommendationJson.context.weather_raw,
             recommendationJson.context.length_of_trip_raw,
             recommendationJson.context.time_of_day_raw,
-            recommendationJson.context.crowdedness_raw
+            recommendationJson.context.crowdedness_raw,
+            recommendationJson.experiment
         )
         return recommendation
     }
@@ -41,7 +42,8 @@ internal class RecommendationJsonAdapter {
                 recommendation.context_length_of_trip_raw,
                 recommendation.context_time_of_day_raw,
                 recommendation.context_crowdedness_raw
-            )
+            ),
+            recommendation.experiment
         )
         return json
     }

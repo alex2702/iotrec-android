@@ -54,7 +54,7 @@ class RecommendationCheckerService : Service() {
         if(intent != null) {
             val thingId = intent!!.getStringExtra("thingId")
 
-            val bareRecommendation = Recommendation("", thingId, 0f, false, 0, "", 0, null, null)
+            val bareRecommendation = Recommendation("", thingId, 0f, false, 0, "", 0, null, null, 0)
 
             // make API call
             GlobalScope.launch {
@@ -75,25 +75,29 @@ class RecommendationCheckerService : Service() {
                 // don't check if thing belongs to a scenario but there is no active experiment test run
                 if(thingExists && !(!experimentTestRunIsActive && thingBelongsToScenario)) {
                     val thingWasFetchedSuccessfullyBefore = thing.lastQueried!!.time > 0
-                    val thingWasLastCheckedForRecoGTE5MinutesAgo = thing.lastCheckedForRecommendation!!.time < Date().time - 5 * 60 * 1000
-                    val thingWasLastRecommendedGTE8HoursAgo = thing.lastRecommended!!.time < Date().time - 8 * 60 * 60 * 1000
+                    val thingWasLastCheckedForRecoGTE10MinutesAgo = thing.lastCheckedForRecommendation!!.time < Date().time - 10 * 60 * 1000
+                    val thingWasLastRecommendedGTE24HoursAgo = thing.lastRecommended!!.time < Date().time - 24 * 60 * 60 * 1000
                     val thingWasNeverRecommendedBefore = thing.lastRecommended!!.time == 0L
 
-                    //only check for recommendation if we know the thing and if last check was at least 5 minutes ago and if last recommendation (to user) was at least 7 days ago (or never recommended)
-                    if (thingWasFetchedSuccessfullyBefore && thingWasLastCheckedForRecoGTE5MinutesAgo && (thingWasLastRecommendedGTE8HoursAgo || thingWasNeverRecommendedBefore)) {    // changed to 8hrs for testing
+                    //only check for recommendation if we know the thing and if last check was at least 10 minutes ago and if last recommendation (to user) was at least 24 hrs ago (or never recommended)
+                    if (thingWasFetchedSuccessfullyBefore && thingWasLastCheckedForRecoGTE10MinutesAgo && (thingWasLastRecommendedGTE24HoursAgo || thingWasNeverRecommendedBefore)) {
                         if (!thing.recommendationQueryRunning) {
-                            Log.d(TAG, "Getting recommendation for " + thing.toString())
+                            //Log.d(TAG, "Getting recommendation for " + thing.toString())
 
                             // if it's available, get "recommendation query running" lock on thing
                             thingRepository.setRecommendationQueryRunning(thingId, true)
 
                             // if an experiment is running, create a bare recommendation with the dummy context
                             if(experimentIsRunning) {
+                                val currentExperiment = app.experimentRepository.getExperimentByOrder(experimentCurrentRun)
                                 bareRecommendation.context_temperature_raw = 10
                                 bareRecommendation.context_weather_raw = "CLOUDY"
                                 bareRecommendation.context_length_of_trip_raw = 180
                                 bareRecommendation.context_time_of_day_raw = null
                                 bareRecommendation.context_crowdedness_raw = null
+                                if(currentExperiment != null) {
+                                    bareRecommendation.experiment = currentExperiment.id
+                                }
 
                             // else create a recommendation object with the real weather, temperature and length of trip
                             } else {
@@ -115,16 +119,13 @@ class RecommendationCheckerService : Service() {
                                         lon = 11.668790 // default to Garching
                                     }
 
-                                    Log.d(
-                                        TAG,
-                                        "using location(lat = " + lat.toString() + "; lon = " + lon.toString()
-                                    )
+                                    //Log.d(TAG,"using location(lat = " + lat.toString() + "; lon = " + lon.toString())
 
                                     val weatherResult = app.openWeatherApi.getWeather(lat, lon)
 
                                     if (weatherResult.isSuccessful) {
                                         val weatherData = weatherResult.body()
-                                        Log.d(TAG, weatherData.toString())
+                                        //Log.d(TAG, weatherData.toString())
                                         val editor = sharedPreferences.edit()
                                         editor.putLong("weather.timestamp", Date().time)
                                         editor.putString(
@@ -151,10 +152,10 @@ class RecommendationCheckerService : Service() {
 
                                 if (result.isSuccessful) {
                                     val resultRecommendation = result.body()
-                                    Log.d(TAG, resultRecommendation.toString())
+                                    //Log.d(TAG, resultRecommendation.toString())
 
                                     if (resultRecommendation != null) {
-                                        Log.d(TAG, "result recommendation was NOT null")
+                                        //Log.d(TAG, "result recommendation was NOT null")
                                         recommendationRepository.insert(resultRecommendation)
 
                                         // update timestamp of last recommendation check (to now)
@@ -165,7 +166,7 @@ class RecommendationCheckerService : Service() {
 
                                         // if reco is to be shown, send notification
                                         if (resultRecommendation.invokeRec) {
-                                            Log.d(TAG, "showing reco")
+                                            //Log.d(TAG, "showing reco")
                                             showRecommendation(resultRecommendation, thing)
 
                                             // update timestamp of last recommendation check (to now)
@@ -185,30 +186,29 @@ class RecommendationCheckerService : Service() {
                             }
 
                             var updatedThing = thingRepository.getThing(bareRecommendation.thing)
-                            Log.d(TAG, "Full thing after reco: " + updatedThing.toString())
+                            //Log.d(TAG, "Full thing after reco: " + updatedThing.toString())
 
                             // release "recommendation query running" lock on thing
                             thingRepository.setRecommendationQueryRunning(thingId, false)
                         } else {
-                            Log.d(
-                                TAG,
-                                "Not checking for recommendation for ${thing.id} because lock is taken"
-                            )
+                            //Log.d(TAG, "Not checking for recommendation for ${thing.id} because lock is taken")
                         }
                     } else {
+
                         Log.d(TAG, "NOT CHECKING FOR RECOMMENDATION FOR ${thing.id} – ${thing.title}")
 
                         if(!thingWasFetchedSuccessfullyBefore) {
                             Log.d(TAG, "thing was not fetched")
                         }
 
-                        if(!thingWasLastCheckedForRecoGTE5MinutesAgo) {
-                            Log.d(TAG, "thing was last check for a reco less than 5 minutes ago")
+                        if(!thingWasLastCheckedForRecoGTE10MinutesAgo) {
+                            Log.d(TAG, "thing was last check for a reco less than 10 minutes ago")
                         }
 
-                        if(!(thingWasLastRecommendedGTE8HoursAgo || thingWasNeverRecommendedBefore)) {
+                        if(!(thingWasLastRecommendedGTE24HoursAgo || thingWasNeverRecommendedBefore)) {
                             Log.d(TAG, "thing was recommeded too recently")
                         }
+
                     }
                 }
             }

@@ -27,4 +27,4 @@ data class Experiment(
     var context_length_of_trip: Int,
     var context_time_of_day: String?,
     var context_crowdedness: String?
-    ) : Parcelable
+) : Parcelable
