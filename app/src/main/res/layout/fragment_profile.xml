@@ -33,39 +33,37 @@
 
                         <LinearLayout
                                 android:id="@+id/profile_container"
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:orientation="vertical"
-                                app:layout_constraintTop_toTopOf="@+id/image"
-                                app:layout_constraintStart_toEndOf="@+id/image"
                                 app:layout_constraintBottom_toBottomOf="@+id/image"
-                                app:layout_constraintEnd_toStartOf="@+id/logout">
+                                app:layout_constraintEnd_toStartOf="@+id/logout"
+                                app:layout_constraintStart_toEndOf="@+id/image"
+                                app:layout_constraintTop_toTopOf="@+id/image">
 
                                 <TextView
                                         android:id="@+id/username"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:layout_gravity="start"
-                                        android:layout_marginTop="0dp"
                                         android:layout_marginStart="8dp"
                                         android:layout_marginLeft="8dp"
+                                        android:layout_marginTop="0dp"
                                         android:layout_marginEnd="16dp"
                                         android:layout_marginRight="16dp"
-                                        tools:text="username"
-                                        android:textSize="24sp" />
+                                        android:textSize="24sp"
+                                        tools:text="username" />
 
                                 <TextView
                                         android:id="@+id/email"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:layout_gravity="start"
-                                        android:layout_marginTop="0dp"
                                         android:layout_marginStart="8dp"
                                         android:layout_marginLeft="8dp"
+                                        android:layout_marginTop="0dp"
                                         android:layout_marginEnd="16dp"
                                         android:layout_marginRight="16dp"
-                                        tools:text="example@example.com"
-                                        android:textSize="18sp"/>
+                                        android:textSize="18sp"
+                                        tools:text="ex@example.com" />
 
                         </LinearLayout>
 

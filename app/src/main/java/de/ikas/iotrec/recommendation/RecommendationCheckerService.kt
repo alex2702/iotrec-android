@@ -194,21 +194,17 @@ class RecommendationCheckerService : Service() {
                             //Log.d(TAG, "Not checking for recommendation for ${thing.id} because lock is taken")
                         }
                     } else {
-
-                        Log.d(TAG, "NOT CHECKING FOR RECOMMENDATION FOR ${thing.id} – ${thing.title}")
-
                         if(!thingWasFetchedSuccessfullyBefore) {
-                            Log.d(TAG, "thing was not fetched")
+                            Log.d(TAG, "NOT CHECKING FOR RECOMMENDATION FOR ${thing.id} – ${thing.title}: thing was not fetched")
                         }
 
                         if(!thingWasLastCheckedForRecoGTE10MinutesAgo) {
-                            Log.d(TAG, "thing was last check for a reco less than 10 minutes ago")
+                            Log.d(TAG, "NOT CHECKING FOR RECOMMENDATION FOR ${thing.id} – ${thing.title}: thing was last check for a reco less than 10 minutes ago")
                         }
 
                         if(!(thingWasLastRecommendedGTE24HoursAgo || thingWasNeverRecommendedBefore)) {
-                            Log.d(TAG, "thing was recommeded too recently")
+                            Log.d(TAG, "NOT CHECKING FOR RECOMMENDATION FOR ${thing.id} – ${thing.title}: thing was recommeded too recently")
                         }
-
                     }
                 }
             }
