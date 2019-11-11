@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
+import android.os.SystemClock
 import android.util.Log
 import android.view.Window
 import android.widget.Button
@@ -73,7 +74,15 @@ class RecommendationActivity : AppCompatActivity() {
             Picasso.get().load(thing.image).into(thingImage)
         }
 
+        var lastClickTimeAccept = 0L
+        var lastClickTimeReject = 0L
+        var lastClickTimeExpl = 0L
+
         acceptButton.setOnClickListener {
+            //only allow one button click per 5 seconds
+            if(SystemClock.elapsedRealtime() - lastClickTimeAccept < 5000) return@setOnClickListener
+            lastClickTimeAccept = SystemClock.elapsedRealtime()
+
             val bareFeedback = Feedback("", 1, recommendation.id)
 
             GlobalScope.launch {
@@ -112,6 +121,10 @@ class RecommendationActivity : AppCompatActivity() {
         }
 
         rejectButton.setOnClickListener {
+            //only allow one button click per 5 seconds
+            if(SystemClock.elapsedRealtime() - lastClickTimeReject < 5000) return@setOnClickListener
+            lastClickTimeReject = SystemClock.elapsedRealtime()
+
             val bareFeedback = Feedback("", -1, recommendation.id)
 
             GlobalScope.launch {
@@ -150,6 +163,10 @@ class RecommendationActivity : AppCompatActivity() {
         }
 
         explanationButton.setOnClickListener {
+            //only allow one button click per 500 seconds (so users can only click once)
+            if(SystemClock.elapsedRealtime() - lastClickTimeExpl < 500000) return@setOnClickListener
+            lastClickTimeExpl = SystemClock.elapsedRealtime()
+
             val analyticsEvent = AnalyticsEvent("RECO_EXPL", recommendation.id, thing.id, 0f)
 
             GlobalScope.launch {

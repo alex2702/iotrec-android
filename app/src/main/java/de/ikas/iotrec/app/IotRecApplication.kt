@@ -84,6 +84,10 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
     //    this.user = null
     //}
 
+    // debugging code
+    //var beaconStats = HashMap<String, MutableList<Double>>()
+    //var lastLogPrint = Date(0)
+
     override fun onCreate() {
         super.onCreate()
 
@@ -251,6 +255,20 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
 
                 val rangedBeacons: MutableList<Thing> = mutableListOf()
 
+                // debugging code
+                /*
+                if(Date().time - lastLogPrint.time > 2 * 60 * 1000) {
+                    lastLogPrint = Date()
+
+                    beaconStats.forEach { (thingId, logTimes) ->
+                        if(beaconStats.containsKey(thingId)) {
+                            var avgTime = (beaconStats[thingId]!!.sumByDouble{ it.toDouble() })/beaconStats[thingId]!!.size
+                            Log.d(TAG, "beacon stats:   ${thingId}          ${String.format("%.2f", avgTime)}  (${beaconStats[thingId]!!.size})")
+                        }
+                    }
+                }
+                */
+
                 for (beacon in beacons) {
                     // filter out some of the test beacons
                     if(
@@ -259,7 +277,6 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
                         beacon.id1.toString() != "18bd9ed1-1c6e-4419-8204-e924d68d065e" &&
                         beacon.id1.toString() != "cb443d13-f04e-49f4-a973-944d13cf3a67"
                     ) {
-
                         // create object for newly discovered thing
                         var beaconType = ""
                         var beaconId = ""
@@ -332,6 +349,15 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
 
                             if (thingExistsInDatabase) {
                                 //Log.d(TAG, "Found existing thing")
+
+                                // debugging code
+                                /*
+                                if(beaconStats.containsKey(thing.id)) {
+                                    beaconStats[thing.id]!!.add((Date().time - thingInDatabase.lastSeen!!.time)/1000.toDouble())
+                                } else {
+                                    beaconStats[thing.id] = mutableListOf((Date().time - thingInDatabase.lastSeen!!.time)/1000.toDouble())
+                                }
+                                */
 
                                 val thingWasSeenGTE30SecondsAgo = (thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000 >= 30
                                 val thingWasSeenLT90SecondsAgo = (thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000 < 90
