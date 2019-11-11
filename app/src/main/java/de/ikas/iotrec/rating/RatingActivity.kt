@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
+import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.view.Window
@@ -63,7 +64,13 @@ class RatingActivity : AppCompatActivity() {
 
         val ratingBar: RatingBar = findViewById(R.id.rating_bar)
 
+        var lastClickTime = 0L
+
         sendButton.setOnClickListener {
+            //only allow one button click per 5 seconds
+            if(SystemClock.elapsedRealtime() - lastClickTime < 5000) return@setOnClickListener
+            lastClickTime = SystemClock.elapsedRealtime()
+
             // get rating
             val ratingValue = ratingBar.rating
 
