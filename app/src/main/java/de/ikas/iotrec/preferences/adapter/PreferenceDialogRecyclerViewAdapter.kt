@@ -76,8 +76,8 @@ class PreferenceDialogRecyclerViewAdapter internal constructor(
     */
 
     private val onCheckedChangeListener = RadioGroup.OnCheckedChangeListener { radioGroupView, checkedId ->
-        Log.d(TAG, "clicked view $radioGroupView")
-        Log.d(TAG, "clicked ID $checkedId")
+        //Log.d(TAG, "clicked view $radioGroupView")
+        //Log.d(TAG, "clicked ID $checkedId")
 
         // get the ToggleButton that was clicked
         for (i in 0 until radioGroupView.childCount) {
@@ -96,8 +96,8 @@ class PreferenceDialogRecyclerViewAdapter internal constructor(
         val currentCategory = subCategories[holder.adapterPosition]
         val currentPreference = preferences.find { x -> x.category == subCategories[holder.adapterPosition].textId}
 
-        Log.d(TAG, "currentCategory: $currentCategory")
-        Log.d(TAG, "currentPreference: $currentPreference")
+        //Log.d(TAG, "currentCategory: $currentCategory")
+        //Log.d(TAG, "currentPreference: $currentPreference")
 
         //Log.d(TAG, "sSC: $selectedSubCategories")
 
@@ -201,14 +201,15 @@ class PreferenceDialogRecyclerViewAdapter internal constructor(
 
     internal fun setSubCategories(subCategories: List<Category>) {
         this.subCategories = subCategories
-        Log.d(TAG, "setSubCategories – notifyDataSetChanged")
+        //Log.d(TAG, "setSubCategories – notifyDataSetChanged")
         notifyDataSetChanged()
     }
 
     internal fun setPreferences(preferences: List<Preference>) {
         this.preferences = preferences
-        Log.d(TAG, "preferences – notifyDataSetChanged")
-        Log.d(TAG, "preferences: " + preferences.size.toString())
+        //Log.d(TAG, "preferences – notifyDataSetChanged")
+        //Log.d(TAG, "preferences: " + preferences.size.toString())
+        //Log.d(TAG, "preferences: " + preferences.toString())
         //notifyDataSetChanged()
     }
 

@@ -10,7 +10,8 @@ import kotlinx.android.parcel.Parcelize
     tableName = "preference_table"
 )
 data class Preference(
-    @PrimaryKey var category: String,
+    @PrimaryKey var id: String,
+    var category: String,
     var value: Int,
     var user: Int
 ) : Parcelable

@@ -194,6 +194,7 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
         val builder = NotificationCompat.Builder(this, TAG)
         builder.setSmallIcon(R.mipmap.ic_launcher)
         builder.setContentTitle("Scanning for Beacons")
+        builder.setGroup("IOTREC_PERSISTENT_GROUP")
 
         val intent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
@@ -221,11 +222,11 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
         //beaconManager.foregroundBetweenScanPeriod = 0
         beaconManager.foregroundBetweenScanPeriod = 0
         //beaconManager.foregroundScanPeriod = 1100
-        beaconManager.foregroundScanPeriod = 3000
+        beaconManager.foregroundScanPeriod = 1500
         //beaconManager.backgroundBetweenScanPeriod = 5000
         beaconManager.backgroundBetweenScanPeriod = 0
         //beaconManager.backgroundScanPeriod = 1100
-        beaconManager.backgroundScanPeriod = 3000
+        beaconManager.backgroundScanPeriod = 1500
 
         //beaconManager.disableForegroundServiceScanning()
 

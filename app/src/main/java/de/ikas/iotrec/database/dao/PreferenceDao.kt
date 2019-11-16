@@ -14,7 +14,7 @@ interface PreferenceDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMultiple(vararg preferences: Preference)
 
-    @Query("DELETE FROM preference_table WHERE category = :preferenceId")
+    @Query("DELETE FROM preference_table WHERE id = :preferenceId")
     suspend fun delete(preferenceId: String)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)

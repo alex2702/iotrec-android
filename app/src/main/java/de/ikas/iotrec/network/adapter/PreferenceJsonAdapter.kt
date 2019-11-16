@@ -12,6 +12,7 @@ internal class PreferenceJsonAdapter {
     @FromJson
     fun preferenceFromJson(preferenceJson: PreferenceJson): Preference {
         val preference = Preference(
+            preferenceJson.id,
             preferenceJson.category,
             preferenceJson.value,
             preferenceJson.user
@@ -22,6 +23,7 @@ internal class PreferenceJsonAdapter {
     @ToJson
     fun preferenceToJson(preference: Preference): PreferenceJson {
         val json = PreferenceJson(
+            preference.id,
             preference.category,
             preference.value,
             preference.user

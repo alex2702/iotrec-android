@@ -212,10 +212,10 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
     //}
 
 
-    suspend fun setPreference(preferenceId: String, value: Int) {
+    suspend fun setPreference(categoryId: String, value: Int) {
         Log.d(TAG, "setPreference")
-        if(categoryRepository.getCategory(preferenceId).level > 1) {   // only lowest-level categories can be selected
-            val preference = Preference(preferenceId, value, this.user!!.id)
+        if(categoryRepository.getCategory(categoryId).level > 1) {   // only lowest-level categories can be selected
+            val preference = Preference("", categoryId, value, this.user!!.id)
             Log.d(TAG, preference.toString())
 
             if(value == 0) {
@@ -230,8 +230,8 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
                     // if a pref has a value of 0 and has existed before, remove it
                     val removedResult = this.user!!.preferences.remove(pref)
                     Log.d(TAG, "Removed preference ($removedResult) - $pref")
-                    preferenceRepository.delete(preference.category)
-                    iotRecApi.deletePreference(this.user!!.id, preference.category)
+                    preferenceRepository.delete(pref!!.id)
+                    iotRecApi.deletePreference(this.user!!.id, pref.id)
                 } else {
                     Log.d(TAG, "did not find existing pref")
                 }
@@ -250,15 +250,24 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
                     Log.d(TAG, pref.category)
                     Log.d(TAG, pref.toString())
 
-                    preferenceRepository.update(preference)
-                    iotRecApi.updatePreference(this.user!!.id, pref.category, pref)
+                    preferenceRepository.update(pref)
+                    iotRecApi.updatePreference(this.user!!.id, pref.id, pref)
                 } else {
                     Log.d(TAG, "did not find existing pref")
 
                     // if a pref has values -1 or 1 and has not existed before, create it
-                    this.user!!.preferences.add(preference)
-                    preferenceRepository.insert(preference)
-                    iotRecApi.addPreference(this.user!!.id, preference)
+                    try {
+                        val result = iotRecApi.addPreference(this.user!!.id, preference)
+                        if (result.isSuccessful) {
+                            val resultPreference = result.body()
+                            if (resultPreference != null) {
+                                preferenceRepository.insert(resultPreference)
+                                this.user!!.preferences.add(resultPreference)
+                            }
+                        }
+                    } catch (e: Throwable) {
+                        Log.d(TAG, e.toString())
+                    }
                 }
             }
 
