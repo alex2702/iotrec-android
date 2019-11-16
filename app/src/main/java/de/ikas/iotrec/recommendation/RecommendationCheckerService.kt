@@ -255,6 +255,7 @@ class RecommendationCheckerService : Service() {
             .setContentIntent(pendingIntent)
             .setVibrate(longArrayOf(0, 1000, 500, 1000, 500, 1000))
             .setSound(sound)
+            .setGroup("IOTREC_RECOMMENDATION_GROUP")
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(

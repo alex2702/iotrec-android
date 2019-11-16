@@ -82,6 +82,7 @@ class RatingNotificationService: IntentService("RatingNotificationService") {
                     .setContentIntent(pendingIntent)
                     .setVibrate(longArrayOf(0, 1000, 500, 1000, 500, 1000))
                     .setSound(sound)
+                    .setGroup("IOTREC_RATING_GROUP")
 
                 val notification = NotificationCompat.BigTextStyle(builder).bigText(notificationBody).build()
 

@@ -18,7 +18,11 @@
                 android:id="@+id/select_preferences"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="gone">
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
             <LinearLayout
                     android:layout_width="match_parent"
@@ -33,13 +37,13 @@
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Before starting the experiment, please choose some preferences first."
-                        android:fontFamily="sans-serif-light"
-                        android:textAlignment="center"
-                        android:textSize="18sp"
                         android:layout_marginStart="32dp"
                         android:layout_marginEnd="32dp"
-                        android:layout_marginBottom="32dp" />
+                        android:layout_marginBottom="32dp"
+                        android:fontFamily="sans-serif-light"
+                        android:text="Before starting the experiment, please choose some preferences first."
+                        android:textAlignment="center"
+                        android:textSize="18sp" />
 
                 <Button
                         android:id="@+id/select_preferences_button"
@@ -55,7 +59,11 @@
                 android:id="@+id/start_scenario"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="gone">
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
             <LinearLayout
                     android:layout_width="match_parent"
@@ -70,24 +78,24 @@
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="The experiment consists of two scenarios."
-                        android:fontFamily="sans-serif-light"
-                        android:textAlignment="center"
-                        android:textSize="18sp"
                         android:layout_marginStart="32dp"
                         android:layout_marginEnd="32dp"
-                        android:layout_marginBottom="32dp" />
+                        android:layout_marginBottom="32dp"
+                        android:fontFamily="sans-serif-light"
+                        android:text="The experiment consists of two scenarios."
+                        android:textAlignment="center"
+                        android:textSize="18sp" />
 
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Your first scenario will be:"
-                        android:fontFamily="sans-serif-light"
-                        android:textAlignment="center"
-                        android:textSize="18sp"
                         android:layout_marginStart="32dp"
                         android:layout_marginEnd="32dp"
-                        android:layout_marginBottom="32dp" />
+                        android:layout_marginBottom="32dp"
+                        android:fontFamily="sans-serif-light"
+                        android:text="Your first scenario will be:"
+                        android:textAlignment="center"
+                        android:textSize="18sp" />
 
                 <TextView
                         android:id="@+id/start_scenario_title"
@@ -96,11 +104,11 @@
                         android:layout_marginStart="32dp"
                         android:layout_marginEnd="32dp"
                         android:layout_marginBottom="32dp"
-                        tools:background="@drawable/border_radius_green"
                         android:padding="12dp"
                         android:textAlignment="center"
                         android:textColor="@color/colorWhite"
                         android:textSize="18sp"
+                        tools:background="@drawable/border_radius_green"
                         tools:text="Job Fair" />
 
                 <Button
@@ -117,7 +125,11 @@
                 android:id="@+id/start_test_run"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="gone">
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
             <LinearLayout
                     android:layout_width="match_parent"
@@ -133,13 +145,13 @@
                         android:id="@+id/start_test_run_body"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="You are now ready to start test run n out of m in the x scenario."
-                        android:fontFamily="sans-serif-light"
-                        android:textAlignment="center"
-                        android:textSize="18sp"
                         android:layout_marginStart="48dp"
                         android:layout_marginEnd="48dp"
-                        android:layout_marginBottom="32dp" />
+                        android:layout_marginBottom="32dp"
+                        android:fontFamily="sans-serif-light"
+                        android:text="You are now ready to start test run n out of m in the x scenario."
+                        android:textAlignment="center"
+                        android:textSize="18sp" />
 
                 <Button
                         android:id="@+id/start_test_run_button"
@@ -156,7 +168,21 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 tools:visibility="visible">
+
+            <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    tools:context=".experiment.ExperimentFragment"
+                    android:fillViewport="true">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
             <LinearLayout
                     android:layout_width="match_parent"
@@ -171,6 +197,7 @@
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="32dp"
                         android:layout_marginStart="32dp"
                         android:layout_marginEnd="32dp"
                         android:layout_marginBottom="8dp"
@@ -276,7 +303,6 @@
                         android:layout_marginStart="32dp"
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="32dp"
-                        android:layout_marginBottom="16dp"
                         android:fontFamily="sans-serif-light"
                         android:text="Look around and find some interesting things! When you've had enough, finish the test run."
                         android:textAlignment="center"
@@ -286,9 +312,15 @@
                         android:id="@+id/perform_test_run_button"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="32dp"
                         android:text="End This Test Run" />
 
             </LinearLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </ScrollView>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -296,7 +328,11 @@
                 android:id="@+id/rate_test_run"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="gone">
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
             <TextView
                     android:id="@+id/rate_test_run_body"
@@ -343,7 +379,11 @@
                 android:id="@+id/start_scenario_2"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="gone">
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
             <LinearLayout
                     android:layout_width="match_parent"
@@ -358,13 +398,13 @@
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Thank you for completing"
-                        android:fontFamily="sans-serif-light"
-                        android:textAlignment="center"
-                        android:textSize="18sp"
                         android:layout_marginStart="32dp"
                         android:layout_marginEnd="32dp"
-                        android:layout_marginBottom="16dp" />
+                        android:layout_marginBottom="16dp"
+                        android:fontFamily="sans-serif-light"
+                        android:text="Thank you for completing"
+                        android:textAlignment="center"
+                        android:textSize="18sp" />
 
                 <TextView
                         android:id="@+id/start_scenario_2_completed"
@@ -373,23 +413,23 @@
                         android:layout_marginStart="32dp"
                         android:layout_marginEnd="32dp"
                         android:layout_marginBottom="48dp"
-                        tools:background="@drawable/border_radius_green"
                         android:padding="12dp"
                         android:textAlignment="center"
                         android:textColor="@color/colorWhite"
                         android:textSize="18sp"
+                        tools:background="@drawable/border_radius_green"
                         tools:text="Job Fair" />
 
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Your second scenarios is"
-                        android:fontFamily="sans-serif-light"
-                        android:textAlignment="center"
-                        android:textSize="18sp"
                         android:layout_marginStart="32dp"
                         android:layout_marginEnd="32dp"
-                        android:layout_marginBottom="16dp" />
+                        android:layout_marginBottom="16dp"
+                        android:fontFamily="sans-serif-light"
+                        android:text="Your second scenarios is"
+                        android:textAlignment="center"
+                        android:textSize="18sp" />
 
                 <TextView
                         android:id="@+id/start_scenario_2_next"
@@ -398,11 +438,11 @@
                         android:layout_marginStart="32dp"
                         android:layout_marginEnd="32dp"
                         android:layout_marginBottom="48dp"
-                        tools:background="@drawable/border_radius_red"
                         android:padding="12dp"
                         android:textAlignment="center"
                         android:textColor="@color/colorWhite"
                         android:textSize="18sp"
+                        tools:background="@drawable/border_radius_red"
                         tools:text="Museum" />
 
                 <Button
@@ -420,7 +460,11 @@
                 android:id="@+id/fill_questionnaire"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="gone">
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
             <ScrollView
                     android:layout_width="match_parent"
@@ -439,14 +483,14 @@
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Thank you for completing"
-                            android:fontFamily="sans-serif-light"
-                            android:textAlignment="center"
-                            android:textSize="18sp"
-                            android:layout_marginTop="32dp"
                             android:layout_marginStart="32dp"
+                            android:layout_marginTop="32dp"
                             android:layout_marginEnd="32dp"
-                            android:layout_marginBottom="16dp" />
+                            android:layout_marginBottom="16dp"
+                            android:fontFamily="sans-serif-light"
+                            android:text="Thank you for completing"
+                            android:textAlignment="center"
+                            android:textSize="18sp" />
 
                     <TextView
                             android:id="@+id/fill_questionnaire_completed"
@@ -455,40 +499,40 @@
                             android:layout_marginStart="32dp"
                             android:layout_marginEnd="32dp"
                             android:layout_marginBottom="48dp"
-                            tools:background="@drawable/border_radius_red"
                             android:padding="12dp"
                             android:textAlignment="center"
                             android:textColor="@color/colorWhite"
                             android:textSize="18sp"
+                            tools:background="@drawable/border_radius_red"
                             tools:text="Museum" />
 
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Before finishing the experiment, please answer a few final questions."
-                            android:fontFamily="sans-serif-light"
-                            android:textAlignment="center"
-                            android:textSize="18sp"
                             android:layout_marginStart="32dp"
                             android:layout_marginEnd="32dp"
-                            android:layout_marginBottom="32dp" />
+                            android:layout_marginBottom="32dp"
+                            android:fontFamily="sans-serif-light"
+                            android:text="Before finishing the experiment, please answer a few final questions."
+                            android:textAlignment="center"
+                            android:textSize="18sp" />
 
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="How old are you?"
-                            android:fontFamily="sans-serif-light"
-                            android:textAlignment="center"
-                            android:textSize="18sp"
                             android:layout_marginStart="32dp"
                             android:layout_marginEnd="32dp"
-                            android:layout_marginBottom="16dp" />
+                            android:layout_marginBottom="16dp"
+                            android:fontFamily="sans-serif-light"
+                            android:text="How old are you?"
+                            android:textAlignment="center"
+                            android:textSize="18sp" />
 
                     <RadioGroup
                             android:id="@+id/fill_questionnaire_age"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="48dp" >
+                            android:layout_marginBottom="48dp">
 
                         <RadioButton
                                 android:id="@+id/fill_questionnaire_age_18"
@@ -536,19 +580,19 @@
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Which gender do you identify most with?"
-                            android:fontFamily="sans-serif-light"
-                            android:textAlignment="center"
-                            android:textSize="18sp"
                             android:layout_marginStart="32dp"
                             android:layout_marginEnd="32dp"
-                            android:layout_marginBottom="16dp" />
+                            android:layout_marginBottom="16dp"
+                            android:fontFamily="sans-serif-light"
+                            android:text="Which gender do you identify most with?"
+                            android:textAlignment="center"
+                            android:textSize="18sp" />
 
                     <RadioGroup
                             android:id="@+id/fill_questionnaire_gender"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="48dp" >
+                            android:layout_marginBottom="48dp">
 
                         <RadioButton
                                 android:id="@+id/fill_questionnaire_gender_male"
@@ -579,19 +623,19 @@
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="What is your highest level of formal education?"
-                            android:fontFamily="sans-serif-light"
-                            android:textAlignment="center"
-                            android:textSize="18sp"
                             android:layout_marginStart="32dp"
                             android:layout_marginEnd="32dp"
-                            android:layout_marginBottom="16dp" />
+                            android:layout_marginBottom="16dp"
+                            android:fontFamily="sans-serif-light"
+                            android:text="What is your highest level of formal education?"
+                            android:textAlignment="center"
+                            android:textSize="18sp" />
 
                     <RadioGroup
                             android:id="@+id/fill_questionnaire_qualification"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="48dp" >
+                            android:layout_marginBottom="48dp">
 
                         <RadioButton
                                 android:id="@+id/fill_questionnaire_qualification_hs"
@@ -627,19 +671,19 @@
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Do you own a smartphone and if yes, what is your average usage time per day?"
-                            android:fontFamily="sans-serif-light"
-                            android:textAlignment="center"
-                            android:textSize="18sp"
                             android:layout_marginStart="32dp"
                             android:layout_marginEnd="32dp"
-                            android:layout_marginBottom="16dp" />
+                            android:layout_marginBottom="16dp"
+                            android:fontFamily="sans-serif-light"
+                            android:text="Do you own a smartphone and if yes, what is your average usage time per day?"
+                            android:textAlignment="center"
+                            android:textSize="18sp" />
 
                     <RadioGroup
                             android:id="@+id/fill_questionnaire_usage"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="48dp" >
+                            android:layout_marginBottom="48dp">
 
                         <RadioButton
                                 android:id="@+id/fill_questionnaire_usage_1"
@@ -671,9 +715,9 @@
                             android:id="@+id/fill_questionnaire_button"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Submit and Finish Study"
                             android:layout_marginBottom="32dp"
-                            android:enabled="false" />
+                            android:enabled="false"
+                            android:text="Submit and Finish Study" />
 
                 </LinearLayout>
 
@@ -685,7 +729,11 @@
                 android:id="@+id/thank_you"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="gone">
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
             <LinearLayout
                     android:layout_width="match_parent"
@@ -700,12 +748,12 @@
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Thank you very much for participating!"
-                        android:fontFamily="sans-serif-light"
-                        android:textAlignment="center"
-                        android:textSize="18sp"
                         android:layout_marginStart="32dp"
-                        android:layout_marginEnd="32dp" />
+                        android:layout_marginEnd="32dp"
+                        android:fontFamily="sans-serif-light"
+                        android:text="Thank you very much for participating!"
+                        android:textAlignment="center"
+                        android:textSize="18sp" />
 
             </LinearLayout>
 
@@ -715,7 +763,11 @@
                 android:id="@+id/please_log_in"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="gone">
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
             <LinearLayout
                     android:layout_width="match_parent"
@@ -730,12 +782,12 @@
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Please log in to participate in the experiment."
-                        android:fontFamily="sans-serif-light"
-                        android:textAlignment="center"
-                        android:textSize="18sp"
                         android:layout_marginStart="32dp"
-                        android:layout_marginEnd="32dp" />
+                        android:layout_marginEnd="32dp"
+                        android:fontFamily="sans-serif-light"
+                        android:text="Please log in to participate in the experiment."
+                        android:textAlignment="center"
+                        android:textSize="18sp" />
 
             </LinearLayout>
 

@@ -78,7 +78,7 @@
             android:layout_marginLeft="8dp"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:text="last seen at "
+            android:text="last seen: "
             android:textColor="@color/colorDarkGray"
             android:textSize="14sp"
             app:layout_constraintStart_toEndOf="@+id/image_container"
