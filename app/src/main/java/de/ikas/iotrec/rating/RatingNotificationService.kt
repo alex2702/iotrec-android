@@ -68,7 +68,7 @@ class RatingNotificationService: IntentService("RatingNotificationService") {
                 notificationIntent.putExtra("recommendation", recommendationBundle)
                 notificationIntent.putExtra("feedback", feedbackBundle)
 
-                val pendingIntent = PendingIntent.getActivity(this, notificationRequestCode++, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+                val pendingIntent = PendingIntent.getActivity(this, notificationRequestCode++, notificationIntent, PendingIntent.FLAG_ONE_SHOT)
                 val sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
                 val builder = NotificationCompat.Builder(this,

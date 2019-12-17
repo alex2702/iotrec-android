@@ -57,7 +57,7 @@
                         android:layout_marginBottom="8dp"/>-->
 
                 <Button
-                        android:text="Save and Close"
+                        android:text="Finish"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/dialog_preference_choice_close"

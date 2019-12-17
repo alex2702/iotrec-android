@@ -197,7 +197,7 @@ class LoginRepository(private val iotRecApi: IotRecApiInit, private val context:
         //    preferenceRepository.insert(preference)
         //}
 
-        // if user object was changed locally, sync back to server
+        // if user object was changed locally, sync back to server  //TODO never used, remove (including API endpoint)?
         if(userChangedLocally) {
             iotRecApi.updateUserFromApp(this.user!!.id, this.user!!)
         }
