@@ -242,7 +242,7 @@ class RecommendationCheckerService : Service() {
         recommendationBundle.putParcelable("recommendation", recommendation)
         notificationIntent.putExtra("recommendationBundle", recommendationBundle)
 
-        val pendingIntent = PendingIntent.getActivity(this, notificationRequestCode++, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val pendingIntent = PendingIntent.getActivity(this, notificationRequestCode++, notificationIntent, PendingIntent.FLAG_ONE_SHOT)
 
         val sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 

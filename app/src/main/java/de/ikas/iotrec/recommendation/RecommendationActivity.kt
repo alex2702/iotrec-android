@@ -190,7 +190,7 @@ class RecommendationActivity : AppCompatActivity() {
 
     private fun scheduleRatingNotification(feedback: Feedback, recommendation: Recommendation, thing: Thing) {
         // get notification time (5 minutes from now)
-        val notificationTime = Calendar.getInstance().timeInMillis + 1 * 60 * 1000  // shortened to 1 min for the user study
+        val notificationTime = Calendar.getInstance().timeInMillis + 5 * 60 * 1000
 
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
 
