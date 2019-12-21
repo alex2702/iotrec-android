@@ -37,18 +37,4 @@ interface CategoryDao {
 
     @Query("SELECT COUNT(*) FROM category_table WHERE parentTextId = :categoryId")
     fun getNumberOfSubCategories(categoryId: String): Int
-
-    /*
-    @Query("SELECT * from category_table WHERE parentTextId = :categoryId AND selected = 1")
-    fun getSelectedSubCategories(categoryId: String): LiveData<List<Category>>
-
-    @Query("UPDATE category_table SET selected = :selected WHERE textId = :categoryId")
-    suspend fun setCategorySelected(categoryId: String, selected: Boolean): Int
-
-    @Query("UPDATE category_table SET selected = 1 WHERE textId IN (:categories)")
-    suspend fun setCategoriesSelectedTrue(categories: List<String>): Int
-
-    @Query("UPDATE category_table SET selected = 0")
-    suspend fun setAllCategoriesSelectedFalse(): Int
-    */
 }

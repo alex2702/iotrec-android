@@ -10,14 +10,6 @@ class ExperimentRepository(
     private val iotRecApi: IotRecApiInit,
     private val experimentDao: ExperimentDao
 ) {
-
-    private val TAG = "ExperimentRepository"
-
-    //@WorkerThread
-    //suspend fun insert(rating: Rating) {
-    //    experimentDao.insert(rating)
-    //}
-
     @WorkerThread
     suspend fun insertMultiple(vararg experiments: Experiment) {
         experimentDao.insertMultiple(*experiments)

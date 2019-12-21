@@ -10,7 +10,9 @@ import de.ikas.iotrec.network.json.PreferenceJson
 import de.ikas.iotrec.network.json.RecommendationJson
 import de.ikas.iotrec.network.model.Context
 
-
+/**
+ * Used by Moshi to convert between JSON and Kotlin objects
+ */
 internal class RecommendationJsonAdapter {
     @FromJson
     fun recommendationFromJson(recommendationJson: RecommendationJson): Recommendation {

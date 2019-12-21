@@ -39,11 +39,7 @@ class RecommendationActivity : AppCompatActivity() {
         app = application as IotRecApplication
         thingRepository = app.thingRepository
 
-        Log.i(
-            TAG,
-            "I am onCreate of RecommendationActivitity."
-        )
-
+        // make it a full-screen activitiy
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         supportActionBar?.hide()
 
@@ -57,11 +53,11 @@ class RecommendationActivity : AppCompatActivity() {
         val recommendationBundle = intent.getBundleExtra("recommendationBundle")
         val recommendation: Recommendation = recommendationBundle.getParcelable("recommendation") as Recommendation
 
+        // get UI elements
         val thingImage: ImageView = findViewById(R.id.thing_image)
         val thingTitle: TextView = findViewById(R.id.thing_title)
         val thingDescription: TextView = findViewById(R.id.thing_description)
         val thingDistance: TextView = findViewById(R.id.thing_distance)
-
         val acceptButton = findViewById<Button>(R.id.reco_accept)
         val rejectButton = findViewById<Button>(R.id.reco_reject)
         val explanationButton = findViewById<Button>(R.id.button_explanation)
@@ -74,6 +70,7 @@ class RecommendationActivity : AppCompatActivity() {
             Picasso.get().load(thing.image).into(thingImage)
         }
 
+        // timestamps that are later used to prevent double clicks
         var lastClickTimeAccept = 0L
         var lastClickTimeReject = 0L
         var lastClickTimeExpl = 0L
@@ -83,16 +80,17 @@ class RecommendationActivity : AppCompatActivity() {
             if(SystemClock.elapsedRealtime() - lastClickTimeAccept < 5000) return@setOnClickListener
             lastClickTimeAccept = SystemClock.elapsedRealtime()
 
+            // create bare feedback object for API
             val bareFeedback = Feedback("", 1, recommendation.id)
 
             GlobalScope.launch {
                 // create feedback object
                 try {
+                    // send feedback object to API
                     val result = app.iotRecApi.createFeedback(recommendation.id, bareFeedback)
-                    Log.d(TAG, result.toString())
 
                     if (result.isSuccessful) {
-                        // schedule the Rating notification
+                        // if feedback was sent, schedule the Rating notification
                         scheduleRatingNotification(result.body()!!, recommendation, thing)
 
                         runOnUiThread {
@@ -125,16 +123,17 @@ class RecommendationActivity : AppCompatActivity() {
             if(SystemClock.elapsedRealtime() - lastClickTimeReject < 5000) return@setOnClickListener
             lastClickTimeReject = SystemClock.elapsedRealtime()
 
+            // create bare feedback object for API
             val bareFeedback = Feedback("", -1, recommendation.id)
 
             GlobalScope.launch {
                 // create feedback object
                 try {
+                    // send feedback object to API
                     val result = app.iotRecApi.createFeedback(recommendation.id, bareFeedback)
-                    Log.d(TAG, result.toString())
 
                     if (result.isSuccessful) {
-                        // schedule the Rating notification
+                        // if feedback was sent, schedule the Rating notification
                         scheduleRatingNotification(result.body()!!, recommendation, thing)
 
                         runOnUiThread {
@@ -167,11 +166,13 @@ class RecommendationActivity : AppCompatActivity() {
             if(SystemClock.elapsedRealtime() - lastClickTimeExpl < 500000) return@setOnClickListener
             lastClickTimeExpl = SystemClock.elapsedRealtime()
 
+            // create analyticsEvent object for API
             val analyticsEvent = AnalyticsEvent("RECO_EXPL", recommendation.id, thing.id, 0f)
 
             GlobalScope.launch {
                 // create analytics object
                 try {
+                    // send to API
                     val result = app.iotRecApi.createAnalyticsEvent(analyticsEvent)
 
                     runOnUiThread {
@@ -192,19 +193,22 @@ class RecommendationActivity : AppCompatActivity() {
         // get notification time (5 minutes from now)
         val notificationTime = Calendar.getInstance().timeInMillis + 5 * 60 * 1000
 
+        // create an alarm manager and include an intent bound to the RatingAlarmReceiver class
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
-
         val alarmIntent = Intent(applicationContext, RatingAlarmReceiver::class.java)
         alarmIntent.putExtra("notificationTime", notificationTime)
 
+        // put the recommended thing in the intent
         val thingBundle = Bundle()
         thingBundle.putParcelable("thing", thing)
         alarmIntent.putExtra("thing", thingBundle)
 
+        // put the feedback that was made in the intent
         val feedbackBundle = Bundle()
         feedbackBundle.putParcelable("feedback", feedback)
         alarmIntent.putExtra("feedback", feedbackBundle)
 
+        // put the recommendation that was shown in the bundle
         val recommendationBundle = Bundle()
         recommendationBundle.putParcelable("recommendation", recommendation)
         alarmIntent.putExtra("recommendation", recommendationBundle)

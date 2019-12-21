@@ -2,12 +2,10 @@ package de.ikas.iotrec.network
 
 import android.content.Context
 import android.preference.PreferenceManager
-import android.util.Log
 import okhttp3.Interceptor
 import okhttp3.Response
 
 //source: https://medium.com/@theanilpaudel/using-the-power-of-retrofit-okhttp-and-dagger-2-for-jwt-token-authentication-ad8db6121eac
-
 class TokenInterceptor constructor(val context: Context) : Interceptor {
 
     private val TAG = "TokenInterceptor"

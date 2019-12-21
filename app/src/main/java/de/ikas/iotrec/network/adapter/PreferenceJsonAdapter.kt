@@ -7,7 +7,9 @@ import de.ikas.iotrec.database.model.Preference
 import de.ikas.iotrec.network.json.CategoryJson
 import de.ikas.iotrec.network.json.PreferenceJson
 
-
+/**
+ * Used by Moshi to convert between JSON and Kotlin objects
+ */
 internal class PreferenceJsonAdapter {
     @FromJson
     fun preferenceFromJson(preferenceJson: PreferenceJson): Preference {

@@ -4,7 +4,6 @@ import androidx.room.TypeConverter
 import java.util.*
 
 object DateTypeConverter {
-
     @TypeConverter
     @JvmStatic
     fun toDate(value: Long?): Date? {

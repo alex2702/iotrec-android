@@ -24,6 +24,7 @@ class RatingNotificationService: IntentService("RatingNotificationService") {
         const val NOTIFICATION_CHANNEL_NAME = "IotRec Rating Notification"
     }
 
+    // higher versions of Android require notification channels
     private fun createNotificationChannel() {
         //only needs to be created on higher API versions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -42,6 +43,7 @@ class RatingNotificationService: IntentService("RatingNotificationService") {
         createNotificationChannel()
 
         if (intent != null) {
+            // get information that was sent with intent
             val notificationTime = intent.getLongExtra("notificationTime", 0L)
             val feedbackBundle = intent.getBundleExtra("feedback")
             val feedback = feedbackBundle.getParcelable("feedback") as Feedback
@@ -49,7 +51,9 @@ class RatingNotificationService: IntentService("RatingNotificationService") {
             val thing = thingBundle.getParcelable("thing") as Thing
             val recommendationBundle = intent.getBundleExtra("recommendation")
 
+            // only show notification if notification time was properly received
             if (notificationTime > 0) {
+                // set appropriate texts
                 var notificationTitle = ""
                 var notificationBody = ""
                 if(feedback.value > 0) {
@@ -62,12 +66,14 @@ class RatingNotificationService: IntentService("RatingNotificationService") {
 
                 val notificationManager: NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
+                // put relevant objects in intent for RatingActivity
                 val notificationIntent = Intent(this, RatingActivity::class.java)
                 notificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 notificationIntent.putExtra("thing", thingBundle)
                 notificationIntent.putExtra("recommendation", recommendationBundle)
                 notificationIntent.putExtra("feedback", feedbackBundle)
 
+                // attach RatingActivity intent to notification
                 val pendingIntent = PendingIntent.getActivity(this, notificationRequestCode++, notificationIntent, PendingIntent.FLAG_ONE_SHOT)
                 val sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
@@ -80,7 +86,7 @@ class RatingNotificationService: IntentService("RatingNotificationService") {
                     .setAutoCancel(true)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setContentIntent(pendingIntent)
-                    .setVibrate(longArrayOf(0, 1000, 500, 1000, 500, 1000))
+                    .setVibrate(longArrayOf(0, 1000, 500, 1000, 500, 1000)) // vibration pattern
                     .setSound(sound)
                     .setGroup("IOTREC_RATING_GROUP")
 

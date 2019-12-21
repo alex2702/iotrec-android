@@ -14,6 +14,7 @@ class RatingAlarmReceiver: BroadcastReceiver() {
 
         val service = Intent(context, RatingNotificationService::class.java)
 
+        // put relevant data (timestamp, thing, recommendation, feedback) in the RatingNotificationService intent
         service.putExtra("notificationTime", intent.getLongExtra("notificationTime", 0))
 
         val thingBundle = intent.getBundleExtra("thing")

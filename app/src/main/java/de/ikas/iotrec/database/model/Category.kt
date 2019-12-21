@@ -10,31 +10,16 @@ import java.util.*
 
 @Parcelize
 @Entity(
-    tableName = "category_table"/*,
-    foreignKeys = [
-        ForeignKey(
-            entity = Category::class,
-            parentColumns = ["textId"],
-            childColumns = ["parentTextId"],
-            onDelete = CASCADE
-        )
-    ],
-    indices = [
-        Index(
-            value = ["parentTextId"]
-        )
-    ]*/
+    tableName = "category_table"
 )
 data class Category(
 
     @PrimaryKey
-    //@ColumnInfo(name = "text_id")
     @Json(name = "text_id")
     var textId: String,
 
     var name: String,
 
-    //@ColumnInfo(name = "parent")
     @Json(name = "parent")
     var parentTextId: String = "",
 

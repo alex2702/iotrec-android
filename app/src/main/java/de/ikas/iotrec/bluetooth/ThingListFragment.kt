@@ -53,6 +53,7 @@ class ThingListFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        // get view and all UI elements
         val view = inflater.inflate(R.layout.fragment_thing_list, container, false)
         val recyclerView = view.findViewById<RecyclerView>(R.id.list)
         val loadingCircle = view.findViewById(R.id.loading) as ProgressBar
@@ -62,6 +63,7 @@ class ThingListFragment : Fragment() {
         val bluetoothEnableButton = view.findViewById<Button>(R.id.enable_bluetooth)
         val locationEnableButton = view.findViewById<Button>(R.id.enable_location)
 
+        // check if location is enabled
         val locationEnabled: Boolean
         var locationGpsEnabled = false
         var locationNetworkEnabled = false
@@ -84,6 +86,7 @@ class ThingListFragment : Fragment() {
             locationEnabled = locationGpsEnabled || locationNetworkEnabled
         }
 
+        // show hints if bluetooth and/or location are disabled
         if(app.bluetoothAdapter == null || !app.bluetoothAdapter.isEnabled || !locationEnabled) {
             if(app.bluetoothAdapter == null) {
                 // bluetooth is not supported by this device
@@ -120,7 +123,6 @@ class ThingListFragment : Fragment() {
             locationNotEnabledMessage.visibility = View.GONE
             locationEnableButton.visibility = View.GONE
 
-
             // Set the adapter
             if (recyclerView is RecyclerView) {
                 with(recyclerView) {
@@ -149,7 +151,6 @@ class ThingListFragment : Fragment() {
     }
 
     /* https://stackoverflow.com/a/37279212 */
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is OnListFragmentInteractionListener) {
@@ -190,6 +191,7 @@ class ThingListFragment : Fragment() {
             ThingListFragment().apply {}
     }
 
+    // when coming back from Android bluetooth or location dialogues, check if modules are now active
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 

@@ -4,6 +4,9 @@ import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 import org.jetbrains.annotations.Nullable
 
+/**
+ * Used by Moshi to convert between JSON and Kotlin objects
+ */
 class DefaultStringAdapter {
     @FromJson
     fun fromJson(@Nullable jsonString: String?): String {

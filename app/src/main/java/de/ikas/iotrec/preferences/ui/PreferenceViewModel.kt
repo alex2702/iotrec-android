@@ -24,8 +24,6 @@ class PreferenceViewModel public constructor(application: Application) : Android
     var preferences: LiveData<List<Preference>>
 
     init {
-        //val categoriesDao = IotRecDatabase.getDatabase(application, viewModelScope).categoryDao()
-        //categoryRepository = CategoryRepository(categoriesDao)
         val app = application as IotRecApplication
         categoryRepository = app.categoryRepository
         preferenceRepository = app.preferenceRepository
@@ -38,13 +36,11 @@ class PreferenceViewModel public constructor(application: Application) : Android
     // gets all sub categories of a parent category
     fun updateSubCategoriesInCategory(categoryId: String) = viewModelScope.launch(Dispatchers.IO) {
         subCategories = categoryRepository.getSubCategories(categoryId)
-        //categoryRepository.updateSubCategories(categoryId)
     }
 
     // gets all preferences within a category
     fun updatePreferencesInCategory(categoryId: String) = viewModelScope.launch(Dispatchers.IO) {
         Log.d(TAG, "updatePreferences with categoryId $categoryId")
         preferences = preferenceRepository.getPreferencesInCategory(categoryId)
-        //categoryRepository.updateSelectedSubCategories(categoryId)
     }
 }

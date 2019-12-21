@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +15,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-
 import de.ikas.iotrec.R
 import de.ikas.iotrec.account.data.LoginRepository
 import de.ikas.iotrec.app.IotRecApplication
@@ -36,20 +34,20 @@ class PreferenceSelectDialogFragment : DialogFragment() {
     private val TAG = "PrefSelectDlgFragment"
 
     private lateinit var preferenceViewModel: PreferenceViewModel
-    //private lateinit var currentPreferences: MutableList<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // get clicked top-level category that was sent along
         arguments?.let {
             category = it.getParcelable(Companion.CATEGORY)
         }
-
-        Log.d(TAG, category.toString())
 
         mainActivity = activity as MainActivity
         app = mainActivity.application as IotRecApplication
         loginRepository = app.loginRepository
 
+        // get the sub categories (and corresponding existing preferences) of the sent top-level category
         preferenceViewModel = ViewModelProviders.of(this).get(PreferenceViewModel::class.java)
         preferenceViewModel.updateSubCategoriesInCategory(category!!.textId)
         preferenceViewModel.updatePreferencesInCategory(category!!.textId)
@@ -60,8 +58,6 @@ class PreferenceSelectDialogFragment : DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        Log.d(TAG, "onCreateView")
-
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_preference_select_dialog, container, false)
         val recyclerView = view.findViewById<RecyclerView>(R.id.dialog_preference_choice_list)
@@ -74,9 +70,6 @@ class PreferenceSelectDialogFragment : DialogFragment() {
                 layoutManager = GridLayoutManager(context, 1) as RecyclerView.LayoutManager?
 
                 adapter = PreferenceDialogRecyclerViewAdapter(context, listener)
-
-                //Log.d(TAG, "setting selectedSubCategories")
-                //(adapter as PreferenceDialogRecyclerViewAdapter).selectedSubCategories = loginRepository.user!!.preferences
 
                 preferenceViewModel.subCategories.observe(viewLifecycleOwner, Observer { subCategories ->
                     // Update the cached copy of the categories in the adapter.
@@ -99,6 +92,7 @@ class PreferenceSelectDialogFragment : DialogFragment() {
         // make dialog non-cancelable and set close button
         this.isCancelable = false
 
+        // close button dismisses the popup
         closeButton.setOnClickListener {
             this.dismiss()
         }
@@ -108,7 +102,6 @@ class PreferenceSelectDialogFragment : DialogFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        Log.d(TAG, "onAttach")
 
         if (context is OnFragmentInteractionListener) {
             listener = context
@@ -125,8 +118,7 @@ class PreferenceSelectDialogFragment : DialogFragment() {
     override fun onResume() {
         super.onResume()
 
-        Log.d(TAG, "onResume")
-
+        // back button dismisses popup
         dialog?.setOnKeyListener(
             DialogInterface.OnKeyListener { dialog, keyCode, _ ->
                 if(keyCode == android.view.KeyEvent.KEYCODE_BACK) {
@@ -160,6 +152,7 @@ class PreferenceSelectDialogFragment : DialogFragment() {
         fun onPreferenceSelectDialogFragmentInteraction(preference: Preference)
     }
 
+    // creating a dialog fragment requires sending along the top-level category that it was opened for
     companion object {
         /**
          * Use this factory method to create a new instance of
