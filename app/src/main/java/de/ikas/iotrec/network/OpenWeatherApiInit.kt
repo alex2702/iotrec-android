@@ -24,6 +24,7 @@ class OpenWeatherApiInit(context: Context) {
     private val openWeatherApi: OpenWeatherApi
     private val moshi: Moshi
 
+    // set up works like IotRecApiInit
     init {
         val loggingInterceptor = HttpLoggingInterceptor()
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
@@ -47,9 +48,6 @@ class OpenWeatherApiInit(context: Context) {
     }
 
     suspend fun getWeather(lat: Double, lon: Double): Response<WeatherData> {
-        //val jsonAdapter = moshi.adapter(WeatherData::class.java)
-        //val weatherData = jsonAdapter.fromJson()
-
         return openWeatherApi.getWeather(lat, lon)
     }
 }

@@ -1,6 +1,5 @@
 package de.ikas.iotrec.database.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.*
 import androidx.room.OnConflictStrategy
 import de.ikas.iotrec.database.model.Feedback

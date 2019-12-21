@@ -9,7 +9,9 @@ import de.ikas.iotrec.network.json.CategoryJson
 import de.ikas.iotrec.network.json.PreferenceJson
 import de.ikas.iotrec.network.json.RatingJson
 
-
+/**
+ * Used by Moshi to convert between JSON and Kotlin objects
+ */
 internal class RatingJsonAdapter {
     @FromJson
     fun ratingFromJson(ratingJson: RatingJson): Rating {

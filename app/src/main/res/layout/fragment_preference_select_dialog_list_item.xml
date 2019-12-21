@@ -78,43 +78,4 @@ android:focusable="false">
                 android:onClick="onPreferenceToggle" />
     </RadioGroup>
 
-    <!--
-    <ToggleButton
-            android:id="@+id/button_negative"
-            android:layout_width="48dp"
-            android:layout_height="wrap_content"
-            android:text="–"
-            android:textOn="–"
-            android:textOff="–"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintRight_toLeftOf="@id/button_neutral"
-            app:layout_constraintEnd_toStartOf="@id/button_neutral" />
-
-    <ToggleButton
-            android:id="@+id/button_neutral"
-            android:layout_width="48dp"
-            android:layout_height="wrap_content"
-            android:text="○"
-            android:textOn="○"
-            android:textOff="○"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/button_positive"
-            app:layout_constraintRight_toLeftOf="@id/button_positive"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    <ToggleButton
-            android:id="@+id/button_positive"
-            android:layout_width="48dp"
-            android:layout_height="wrap_content"
-            android:text="+"
-            android:textOn="+"
-            android:textOff="+"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintRight_toRightOf="parent"/>
-    -->
-
 </androidx.constraintlayout.widget.ConstraintLayout>

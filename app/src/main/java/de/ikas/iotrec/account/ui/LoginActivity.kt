@@ -1,7 +1,6 @@
 package de.ikas.iotrec.account.ui
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -17,17 +16,10 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-
 import de.ikas.iotrec.R
-import android.preference.PreferenceManager
-import android.util.Log
-import android.view.inputmethod.InputMethodManager
-import androidx.appcompat.app.AlertDialog
 import de.ikas.iotrec.app.IotRecApplication
-import de.ikas.iotrec.app.ProfileFragment
 import de.ikas.iotrec.extensions.hideKeyboard
 import kotlinx.coroutines.*
-import kotlinx.coroutines.Dispatchers.IO
 
 
 class LoginActivity : AppCompatActivity(), SignupFragment.OnFragmentInteractionListener {
@@ -46,6 +38,7 @@ class LoginActivity : AppCompatActivity(), SignupFragment.OnFragmentInteractionL
 
         setContentView(R.layout.activity_login)
 
+        // get all fields of login form
         val usernameField = findViewById<EditText>(R.id.username)
         val passwordField = findViewById<EditText>(R.id.password)
         val loginButton = findViewById<Button>(R.id.login)
@@ -58,7 +51,7 @@ class LoginActivity : AppCompatActivity(), SignupFragment.OnFragmentInteractionL
         loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
             val loginState = it ?: return@Observer
 
-            // disable login button unless both username / password is valid
+            // disable login button unless both username / password are valid
             loginButton.isEnabled = loginState.isDataValid
 
             if (loginState.usernameError != null) {
@@ -76,63 +69,40 @@ class LoginActivity : AppCompatActivity(), SignupFragment.OnFragmentInteractionL
             if (loginResult.error != null) {
                 showLoginFailed(loginResult.error)
             }
+
+            // if login was successful, get categories and questions from backend and insert them into the database
             if (loginResult.success != null) {
-
-
-                // store user information in shared preferences
-                //val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
-                //val editor = sharedPrefs.edit()
-                //editor.putString("user.username", loginResult.success.username)
-                //editor.putString("user.email", loginResult.success.email)
-                //editor.putString("user.token", loginResult.success.token)
-                //editor.apply()
-
-
                 scope.launch {
-                    Log.d(TAG, "launched")
                     //sync categories
                     val result = app.iotRecApi.getCategories()
-                    Log.d(TAG, "got result from getCategories")
 
                     // if successful, update database object
                     if (result.isSuccessful) {
-                        Log.d(TAG, "result successful")
                         val resultCategories = result.body()
-                        Log.d(TAG, resultCategories.toString())
 
                         // insert categories into database
                         app.categoryRepository.insertMultiple(*resultCategories!!.toTypedArray())
-                        Log.d(TAG, "inserted categories")
                     }
 
                     val resultQ = app.iotRecApi.getQuestions()
 
-                    Log.d(TAG, resultQ.toString())
-
                     // if successful, update database
                     if (resultQ.isSuccessful) {
                         val resultQuestions = resultQ.body()
-                        Log.d(TAG, resultQuestions.toString())
                         app.questionRepository.insertMultiple(*resultQuestions!!.toTypedArray())
                     }
                 }
 
-                //runOnUiThread {
-                Log.d(TAG, "updateUiWithUser")
                 // show success message and profile tab
                 updateUiWithUser(loginResult.success)
 
-                Log.d(TAG, loginResult.success.preferences.toString())
-
+                // set activity result, so profilefragment (that called the activity) can respond appropriately
                 val resultIntent = Intent()
                 resultIntent.putExtra("ACTION", "login")
-                Log.d(TAG, "setResult")
                 setResult(Activity.RESULT_OK, resultIntent)
 
-                Log.d(TAG, "finish")
                 //Complete and destroy login activity once successful
                 finish()
-
             }
         })
 
@@ -177,7 +147,7 @@ class LoginActivity : AppCompatActivity(), SignupFragment.OnFragmentInteractionL
             loginViewModel.login(usernameField.text.toString(), passwordField.text.toString())
         }
 
-
+        // show signup fragment when user clicks respective button
         goToSignupButton.setOnClickListener {
             setTitle(R.string.title_signup)
             val signupFragment = SignupFragment()
@@ -189,12 +159,10 @@ class LoginActivity : AppCompatActivity(), SignupFragment.OnFragmentInteractionL
         }
     }
 
+    // show a welcome toast after successful login
     private fun updateUiWithUser(model: LoggedInUserView) {
         val welcome = getString(R.string.welcome)
         val username = model.username
-
-        //val preferences = model.preferences
-        //Log.d(TAG, preferences.toString())
 
         Toast.makeText(
             applicationContext,

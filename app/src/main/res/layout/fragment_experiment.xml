@@ -364,15 +364,6 @@
                     app:layout_constraintTop_toBottomOf="@+id/rate_test_run_border"
                     tools:listitem="@layout/experiment_list_item" />
 
-            <!--<Button
-                    android:id="@+id/rate_test_run_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Submit"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent" />-->
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout

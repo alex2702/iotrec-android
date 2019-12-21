@@ -2,12 +2,10 @@ package de.ikas.iotrec.account.ui
 
 import android.app.Activity
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -18,28 +16,15 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-
 import de.ikas.iotrec.R
 import de.ikas.iotrec.app.IotRecApplication
-import de.ikas.iotrec.app.ProfileFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-
-/**
- * A simple [Fragment] subclass.
- * Activities that contain this fragment must implement the
- * [SignupFragment.OnFragmentInteractionListener] interface
- * to handle interaction events.
- * Use the [SignupFragment.newInstance] factory method to
- * create an instance of this fragment.
- *
- */
 class SignupFragment : Fragment() {
 
     private var listener: OnFragmentInteractionListener? = null
@@ -54,6 +39,7 @@ class SignupFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // get an instance of the parent LoginActivity
         loginActivity = activity as LoginActivity
         app = loginActivity.application as IotRecApplication
     }
@@ -62,9 +48,8 @@ class SignupFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
+        // get overall view and then fields and buttons
         val view = inflater.inflate(R.layout.fragment_signup, container, false)
-
         val usernameField = view.findViewById<EditText>(R.id.username)
         val emailField = view.findViewById<EditText>(R.id.email_address)
         val passwordField = view.findViewById<EditText>(R.id.password)
@@ -101,32 +86,24 @@ class SignupFragment : Fragment() {
                 showSignupFailed(signupResult.error)
             }
             if (signupResult.success != null) {
-
+                // if signup was successful, get categories and questions from backend and insert them into the database
                 scope.launch {
-                    Log.d(TAG, "launched")
                     //sync categories
                     val result = app.iotRecApi.getCategories()
-                    Log.d(TAG, "got result from getCategories")
 
                     // if successful, update database object
                     if (result.isSuccessful) {
-                        Log.d(TAG, "result successful")
                         val resultCategories = result.body()
-                        Log.d(TAG, resultCategories.toString())
 
                         // insert categories into database
                         app.categoryRepository.insertMultiple(*resultCategories!!.toTypedArray())
-                        Log.d(TAG, "inserted categories")
                     }
 
                     val resultQ = app.iotRecApi.getQuestions()
 
-                    Log.d(TAG, resultQ.toString())
-
                     // if successful, update database
                     if (resultQ.isSuccessful) {
                         val resultQuestions = resultQ.body()
-                        Log.d(TAG, resultQuestions.toString())
                         app.questionRepository.insertMultiple(*resultQuestions!!.toTypedArray())
                     }
                 }
@@ -138,10 +115,9 @@ class SignupFragment : Fragment() {
                 val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(activity)
                 val editor = sharedPrefs.edit()
                 editor.putString("userToken", signupResult.success.token)
-                //editor.putString("user.username", signupResult.success.username)
-                //editor.putString("user.email", signupResult.success.email)
                 editor.apply()
 
+                // set LoginActivity's result, so profilefragment (that called the activity) can respond appropriately
                 val intent = Intent()
                 intent.putExtra("ACTION", "signup")
                 activity!!.setResult(Activity.RESULT_OK, intent)

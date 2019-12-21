@@ -2,7 +2,6 @@ package de.ikas.iotrec.bluetooth
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import android.view.LayoutInflater
 import android.view.View
@@ -15,9 +14,8 @@ import de.ikas.iotrec.database.model.Thing
 
 class ThingBottomSheetFragment : BottomSheetDialogFragment() {
 
-    //private lateinit var thingViewModel: ThingViewModel
-
     companion object {
+        // for a new instance of the bottom sheet, get the thing that was clicked
         fun newInstance(thing: Thing, loginStatus: Boolean): ThingBottomSheetFragment =
             ThingBottomSheetFragment().apply {
                 arguments = Bundle().apply {
@@ -32,10 +30,12 @@ class ThingBottomSheetFragment : BottomSheetDialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        // receive information from clicked thing
         val thing = arguments!!.getParcelable("CLICKED_THING") as Thing
         val loginStatus = arguments!!.getInt("LOGIN_STATUS", 0)
         val loginStatusBoolean = loginStatus == 1
 
+        // get view and all UI elements
         val view = inflater.inflate(R.layout.fragment_thing_bottom_sheet, container, false)
 
         val textViewTitle: TextView = view.findViewById(R.id.thing_title)
@@ -50,6 +50,7 @@ class ThingBottomSheetFragment : BottomSheetDialogFragment() {
         val textViewOccupation: TextView = view.findViewById(R.id.thing_occupation)
         val imageView: ImageView = view.findViewById(R.id.thing_image)
 
+        // if a user is logged in, show item information
         if(loginStatusBoolean) {
             textViewCategories.visibility = View.VISIBLE
             textViewId.visibility = View.VISIBLE
@@ -95,30 +96,10 @@ class ThingBottomSheetFragment : BottomSheetDialogFragment() {
             textViewOccupationHeader.visibility = View.GONE
         }
 
-
         return view
     }
 
-    /*
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        thingViewModel = ViewModelProviders.of(this).get(ThingViewModel::class.java)
-
-        list.layoutManager = LinearLayoutManager(context)
-        val adapter = LocalListAdapter(viewModel)
-        list.adapter = adapter
-
-        val items = mutableListOf<ViewItem>().apply {
-            add(ViewItem.TitleView("Actions"))
-            add(ViewItem.ActionView("Create new album", R.drawable.ic_add_black_24dp, viewModel.newAlbumEvent))
-        }
-
-        setupObserver()
-    }
-    */
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        //list.layoutManager = LinearLayoutManager(context)
     }
 
     override fun onAttach(context: Context) {

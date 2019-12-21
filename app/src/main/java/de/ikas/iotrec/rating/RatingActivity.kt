@@ -1,18 +1,11 @@
 package de.ikas.iotrec.recommendation
 
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.Intent
 import android.os.Bundle
 import android.os.SystemClock
 import android.util.Log
-import android.view.View
 import android.view.Window
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.children
-import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipGroup
 import de.ikas.iotrec.R
 import de.ikas.iotrec.app.IotRecApplication
 import de.ikas.iotrec.database.model.Feedback
@@ -20,24 +13,21 @@ import de.ikas.iotrec.database.model.Rating
 import de.ikas.iotrec.database.model.Recommendation
 import de.ikas.iotrec.database.model.Thing
 import de.ikas.iotrec.database.repository.ThingRepository
-import de.ikas.iotrec.rating.RatingAlarmReceiver
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.util.*
 
 class RatingActivity : AppCompatActivity() {
 
     protected val TAG = "RatingActivity"
 
     private lateinit var app: IotRecApplication
-    private lateinit var thingRepository: ThingRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         app = application as IotRecApplication
-        //thingRepository = app.thingRepository
 
+        // make it a full-screen activitiy
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         supportActionBar?.hide()
 
@@ -51,19 +41,22 @@ class RatingActivity : AppCompatActivity() {
         val feedbackBundle = intent.getBundleExtra("feedback")
         val feedback: Feedback = feedbackBundle.getParcelable("feedback") as Feedback
 
+        // get and populate UI elements
         val thingTitle: TextView = findViewById(R.id.intro_body_1)
         thingTitle.text = "You have recently been recommended ${thing.title}."
 
         val textBody: TextView = findViewById(R.id.intro_body_2)
 
         if(feedback.value < 0) {
-            textBody.text = "You have rejected the recommendation. Care to rate the recommendation anyway?\nDid it not fit your interests? Was it inappropriate at the time? Was it just not useful to you?\n\nPlease select a rating between 0 and 5."
+            textBody.text = "You have rejected the recommendation. Care to rate the recommendation anyway?\nDid it not fit your interests? Was it inappropriate at the time? " +
+                    "Was it just not useful to you?\n\nPlease select a rating between 0 and 5."
         }
 
         val sendButton = findViewById<Button>(R.id.send_button)
 
         val ratingBar: RatingBar = findViewById(R.id.rating_bar)
 
+        // timestamp to prevent double clicks
         var lastClickTime = 0L
 
         sendButton.setOnClickListener {
@@ -74,25 +67,14 @@ class RatingActivity : AppCompatActivity() {
             // get rating
             val ratingValue = ratingBar.rating
 
-            /*
-            // get selected improvements
-            val improvements: ChipGroup = findViewById(R.id.improvements)
-            val improvementsSelected = arrayListOf<String>()
-            for(chip in improvements.children) {
-                if((chip as Chip).isChecked) {
-                    improvementsSelected.add(chip.text.toString())
-                }
-            }
-            */
-
+            // bare rating object for API
             val bareRating = Rating("", ratingValue, arrayListOf(), recommendation.id)
 
             GlobalScope.launch {
                 // create rating object
                 try {
+                    // send to API
                     val result = app.iotRecApi.createRating(recommendation.id, bareRating)
-
-                    Log.d(TAG, result.toString())
 
                     if (result.isSuccessful) {
                         // show a thank you toast

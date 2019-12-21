@@ -8,8 +8,6 @@ import retrofit2.Response
 
 class ReplyRepository(private val iotRecApi: IotRecApiInit, private val replyDao: ReplyDao) {
 
-    private val TAG = "ReplyRepository"
-
     @WorkerThread
     suspend fun insert(reply: Reply) {
         replyDao.insert(reply)

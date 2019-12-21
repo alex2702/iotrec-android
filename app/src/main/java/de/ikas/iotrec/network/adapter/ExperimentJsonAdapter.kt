@@ -14,13 +14,12 @@ import de.ikas.iotrec.network.model.Context
 import java.util.*
 import kotlin.math.exp
 
-
+/**
+ * Used by Moshi to convert between JSON and Kotlin objects
+ */
 internal class ExperimentJsonAdapter {
     @FromJson
     fun experimentFromJson(experimentJson: ExperimentJson): Experiment {
-        //val startDate = if(experimentJson.start != null) experimentJson.start else Date()
-        //val endDate = if(experimentJson.end != null) experimentJson.end else Date()
-
         val experiment = Experiment(
             experimentJson.id,
             experimentJson.start,
@@ -29,11 +28,6 @@ internal class ExperimentJsonAdapter {
             experimentJson.preferences_active,
             experimentJson.order,
             experimentJson.scenario,
-            //experimentJson.context.weather_raw,
-            //experimentJson.context.temperature_raw,
-            //experimentJson.context.length_of_trip_raw,
-            //experimentJson.context.time_of_day_raw,
-            //experimentJson.context.crowdedness_raw
             "CLOUDY",
             10,
             180,

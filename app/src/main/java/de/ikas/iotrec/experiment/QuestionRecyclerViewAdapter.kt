@@ -1,7 +1,6 @@
 package de.ikas.iotrec.experiment
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +9,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import de.ikas.iotrec.R
 import de.ikas.iotrec.app.IotRecApplication
-import kotlinx.coroutines.*
 import android.widget.SeekBar
 import de.ikas.iotrec.database.model.Question
 import de.ikas.iotrec.database.model.Reply
@@ -26,6 +24,7 @@ class QuestionRecyclerViewAdapter internal constructor(
     private val VIEW_TYPE_ITEM = 1
     private val inflater: LayoutInflater = LayoutInflater.from(context)
     private var questions = emptyList<Question>() // Cached copy of questions
+    // hold values of all 12 replies
     private var replies = listOf(
         Reply(0, 1, 0),
         Reply(0, 2, 0),
@@ -42,10 +41,6 @@ class QuestionRecyclerViewAdapter internal constructor(
     )
 
     var app = context.applicationContext as IotRecApplication
-    var questionRepository = app.questionRepository
-
-    private val job = Job()
-    private val scope = CoroutineScope(Dispatchers.Main + job)
 
     private val mOnClickListener: View.OnClickListener = View.OnClickListener { view ->
         val item = view.tag as Question

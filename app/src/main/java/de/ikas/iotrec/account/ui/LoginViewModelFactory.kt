@@ -19,12 +19,7 @@ class LoginViewModelFactory(val context: Context) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
-            return LoginViewModel(
-                //loginRepository = LoginRepository(
-                //    iotRecApi = IotRecApiInit(context)
-                //)
-                loginRepository
-            ) as T
+            return LoginViewModel(loginRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

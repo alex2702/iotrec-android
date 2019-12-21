@@ -2,7 +2,6 @@ package de.ikas.iotrec.preferences.ui
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -17,20 +16,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.ikas.iotrec.R
 import de.ikas.iotrec.account.data.LoginRepository
-import de.ikas.iotrec.account.ui.LoginActivity
 import de.ikas.iotrec.app.IotRecApplication
 import de.ikas.iotrec.app.MainActivity
-import de.ikas.iotrec.app.ProfileFragment
-
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import de.ikas.iotrec.database.dao.CategoryDao
-import de.ikas.iotrec.database.db.IotRecDatabase
 import de.ikas.iotrec.database.model.Category
 import de.ikas.iotrec.database.repository.CategoryRepository
 import de.ikas.iotrec.preferences.adapter.PreferenceRecyclerViewAdapter
@@ -41,7 +34,6 @@ import de.ikas.iotrec.preferences.adapter.PreferenceRecyclerViewAdapter
  * [PreferenceListFragment.OnListFragmentInteractionListener] interface.
  */
 class PreferenceListFragment : Fragment() {
-
     private var listener: OnListFragmentInteractionListener? = null
     private val TAG = "PreferenceListFragment"
 
@@ -104,12 +96,14 @@ class PreferenceListFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        // get view and UI elements from layout files
         val view = inflater.inflate(R.layout.fragment_preference_list, container, false)
         val recyclerView = view.findViewById<RecyclerView>(R.id.list)
         val notLoggedInText = view.findViewById<TextView>(R.id.categories_not_logged_in_text)
         val notLoggedInButton = view.findViewById<Button>(R.id.categories_not_logged_in_button)
         val loadingCircle = view.findViewById(R.id.loading) as ProgressBar
 
+        // show preference-related UI only when logged in
         if(loginRepository.isLoggedIn()) {
             recyclerView.visibility = View.VISIBLE
             notLoggedInText.visibility = View.GONE
@@ -140,6 +134,7 @@ class PreferenceListFragment : Fragment() {
                         }
                     )
 
+                    // add a divider line between list items
                     val dividerItemDecoration = DividerItemDecoration(
                         recyclerView.context,
                         (layoutManager as LinearLayoutManager).orientation
@@ -148,6 +143,7 @@ class PreferenceListFragment : Fragment() {
                 }
             }
 
+            // if the user hasn't selected any preferences yet, show an alert explaining the process
             if(loginRepository.user!!.preferences.size == 0) {
                 val builder = AlertDialog.Builder((activity as Activity))
                 builder
@@ -170,25 +166,16 @@ class PreferenceListFragment : Fragment() {
 
             return view
         } else {
+            // if the user not logged in, show an explanation and a button
             loadingCircle.visibility = View.GONE
             recyclerView.visibility = View.GONE
             notLoggedInText.visibility = View.VISIBLE
             notLoggedInButton.visibility = View.VISIBLE
 
+            // but lets the user move to the profile fragment
             notLoggedInButton.setOnClickListener {
                 // move to profile fragment
-                //activity!!.supportFragmentManager
-                //    .beginTransaction()
-                //    .replace(R.id.fragment_container, ProfileFragment(), tag)
-                //    .commit()
                 (activity as MainActivity).navView.selectedItemId = R.id.navigation_profile
-
-                // start login activity
-                //val intent = Intent(activity, LoginActivity::class.java)
-                //intent.putExtra("ORIGIN", "preferences")
-                //(activity as MainActivity).startActivityForResult(intent,
-                //    MainActivity.START_LOGIN_ACTIVITY_REQUEST_CODE
-                //)
             }
 
             return view

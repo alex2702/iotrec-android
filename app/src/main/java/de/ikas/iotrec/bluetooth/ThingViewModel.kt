@@ -7,14 +7,11 @@ import androidx.lifecycle.viewModelScope
 import de.ikas.iotrec.database.db.IotRecDatabase
 import de.ikas.iotrec.database.model.Thing
 import de.ikas.iotrec.database.repository.ThingRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-
-//import de.ikas.iotrec.database.model.Venue
 
 class ThingViewModel public constructor(application: Application) : AndroidViewModel(application) {
 
     private val repository: ThingRepository
+    // live data that holds all things currently in range
     val allThingsInRange: LiveData<List<Thing>>
 
     init {

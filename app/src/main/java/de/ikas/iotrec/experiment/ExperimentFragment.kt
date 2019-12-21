@@ -25,16 +25,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
-
 import de.ikas.iotrec.R
 import de.ikas.iotrec.account.data.model.User
 import de.ikas.iotrec.app.IotRecApplication
 import de.ikas.iotrec.app.MainActivity
-import de.ikas.iotrec.database.model.Experiment
 import de.ikas.iotrec.database.model.Question
-import de.ikas.iotrec.network.json.Main
 import de.ikas.iotrec.network.model.Questionnaire
-import de.ikas.iotrec.preferences.adapter.PreferenceRecyclerViewAdapter
 import kotlinx.coroutines.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -43,13 +39,10 @@ import kotlin.math.roundToInt
 class ExperimentFragment : Fragment() {
 
     private var listener: OnQuestionListFragmentInteractionListener? = null
-
     private lateinit var sharedPrefs: SharedPreferences
     private lateinit var app: IotRecApplication
     private lateinit var mainActivity: MainActivity
     private lateinit var questionViewModel: QuestionViewModel
-    private val job = Job()
-    private val scope = CoroutineScope(Dispatchers.Main + job)
 
     private val TAG = "ExperimentFragment"
 
@@ -69,6 +62,7 @@ class ExperimentFragment : Fragment() {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_experiment, container, false)
 
+        // get UI elements from view
         val viewSelectPreferences = view.findViewById<ConstraintLayout>(R.id.select_preferences)
         val viewStartScenario = view.findViewById<ConstraintLayout>(R.id.start_scenario)
         val viewStartTestRun = view.findViewById<ConstraintLayout>(R.id.start_test_run)
@@ -79,6 +73,7 @@ class ExperimentFragment : Fragment() {
         val viewThankYou = view.findViewById<ConstraintLayout>(R.id.thank_you)
         val viewPleaseLogIn = view.findViewById<ConstraintLayout>(R.id.please_log_in)
 
+        // put all views (which correspond to steps, and thus "pages" of the experiments) in a list
         val views = arrayListOf(
             viewSelectPreferences,
             viewStartScenario,
@@ -102,6 +97,7 @@ class ExperimentFragment : Fragment() {
 
         // only show something if user is logged in
         if(user != null && mainActivity.loginRepository.isLoggedIn()) {
+            // depending on the current step, show a different view from the views set
             when (experimentCurrentStep) {
                 "start" -> {
                     // check if preferences have been selected
@@ -140,12 +136,6 @@ class ExperimentFragment : Fragment() {
         return view
     }
 
-    /*
-    fun onButtonPressed(uri: Uri) {
-        listener?.onFragmentInteraction(uri)
-    }
-    */
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is OnQuestionListFragmentInteractionListener) {
@@ -175,18 +165,17 @@ class ExperimentFragment : Fragment() {
     }
 
     fun showView(views: ArrayList<ConstraintLayout>, indexToShow: Int) {
+        // hide all views
         for(view in views) {
             view.visibility = View.GONE
         }
 
+        // get the user's current test run
         var experimentCurrentRun = sharedPrefs.getInt("experimentCurrentRun", 0)
 
-        Log.d(TAG, "experimentCurrentRun = ${sharedPrefs.getInt("experimentCurrentRun", 0)}")
-        Log.d(TAG, "experimentCurrentStep = ${sharedPrefs.getString("experimentCurrentStep", "none")}")
-
+        // get the user's experiment from the database
         GlobalScope.launch {
             val allExperiments = mainActivity.experimentRepository.getAllExperiments()
-            Log.d(TAG, allExperiments.toString())
         }
 
         when(indexToShow) {
@@ -215,6 +204,7 @@ class ExperimentFragment : Fragment() {
                             scenarioTextView.background = ContextCompat.getDrawable(mainActivity, R.drawable.border_radius_green)
                         }
 
+                        // hook up the button
                         val button = views[indexToShow].findViewById<Button>(R.id.start_scenario_button)
                         button.setOnClickListener {
                             val editor = sharedPrefs.edit()
@@ -275,7 +265,6 @@ class ExperimentFragment : Fragment() {
                         mainActivity.experimentRepository.getExperimentByOrder(experimentCurrentRun)
 
                     mainActivity.runOnUiThread {
-
                         //update counter and scenario in textview
                         val textViewCounter =
                             views[indexToShow].findViewById<TextView>(R.id.perform_test_run_counter)
@@ -455,14 +444,7 @@ class ExperimentFragment : Fragment() {
             }
             //viewStartScenario2
             5 -> {
-                //var lastExperiment: Experiment
-                //var currentExperiment: Experiment(0)
-
                 GlobalScope.launch {
-                    //get last experiment from db (using experimentCurrentRun-1)
-                    //lastExperiment =
-                    //    mainActivity.experimentRepository.getExperimentByOrder(experimentCurrentRun - 1)
-
                     //get current experiment from db (using experimentCurrentRun)
                     val currentExperiment =
                         mainActivity.experimentRepository.getExperimentByOrder(experimentCurrentRun)
@@ -654,11 +636,11 @@ class ExperimentFragment : Fragment() {
             }
             //viewThankYou
             7 -> {
-
+                // no dynamic steps needed for now
             }
             //viewPleaseLogIn
             8 -> {
-
+                // no dynamic steps needed for now
             }
         }
 

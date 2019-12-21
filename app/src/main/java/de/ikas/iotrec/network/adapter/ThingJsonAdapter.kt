@@ -7,6 +7,9 @@ import de.ikas.iotrec.database.model.Thing
 import de.ikas.iotrec.network.json.ThingJson
 import java.util.*
 
+/**
+ * Used by Moshi to convert between JSON and Kotlin objects
+ */
 internal class ThingJsonAdapter {
     @FromJson
     fun thingFromJson(thingJson: ThingJson): Thing {
@@ -37,7 +40,6 @@ internal class ThingJsonAdapter {
             thingJson.occupation,
             false
         )
-        Log.d("ThingJsonAdapter", "thingFromJson: " + thing.toString())
         return thing
     }
 
@@ -62,7 +64,6 @@ internal class ThingJsonAdapter {
             categoriesList,
             thing.occupation
         )
-        Log.d("ThingJsonAdapter", "thingToJson: " + json)
         return json
     }
 }

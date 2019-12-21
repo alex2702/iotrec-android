@@ -35,12 +35,17 @@ import okio.blackholeSink
 
 class IotRecApplication : Application(), BeaconConsumer, LocationListener {
     private val TAG = "IotRecApplication"
+
+    // bluetooth and location-related classes
     private lateinit var beaconManager: BeaconManager
     var bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     lateinit var locationManager: LocationManager
     lateinit var location: Location
 
+    // initialize an instance of the API
     val iotRecApi = IotRecApiInit(this)
+
+    // declare instances of all repositories
     lateinit var loginRepository: LoginRepository
 
     private lateinit var categoryDao: CategoryDao
@@ -74,27 +79,10 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
 
     private lateinit var sharedPrefs: SharedPreferences
 
-    // user management
-    //public var user: User? = null
-
-    //val isLoggedIn: Boolean
-    //    get() = user != null
-
-    //fun logout() {
-    //    this.user = null
-    //}
-
-    // debugging code
-    //var beaconStats = HashMap<String, MutableList<Double>>()
-    //var lastLogPrint = Date(0)
-
     override fun onCreate() {
         super.onCreate()
 
-        Log.d(TAG, "IotRecApplication – onCreate")
-        Log.d(TAG, Build.MANUFACTURER)
-        Log.d(TAG, Build.VERSION.SDK_INT.toString())
-        Log.d(TAG, Build.VERSION_CODES.O_MR1.toString())
+        // initialize all objects declared above
 
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
 
@@ -127,13 +115,9 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
 
         loginRepository = LoginRepository(iotRecApi, this)
 
-        // gets up-to-date user profile if a user is logged in
-        if(loginRepository.isLoggedIn()) {
-            //loginRepository.syncUserProfile()
-        }
-
         locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
+        // set up location manager according to device's capabilities
         val provider: String
         if(locationManager.allProviders.contains("network")) {
             provider = LocationManager.NETWORK_PROVIDER
@@ -144,6 +128,7 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
         }
         location = Location(provider)
 
+        // try to get the location here, so it's available once needed for weather context data
         try {
             locationManager.requestLocationUpdates(
                 provider,
@@ -157,37 +142,25 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
 
         prepareBluetoothScanning()
 
+        // set up for icon library
         Iconics.init(applicationContext)
     }
 
     fun prepareBluetoothScanning() {
-        //appLifecycleObserver = IotRecAppLifecycleObserver(this)
-        //ProcessLifecycleOwner.get().lifecycle.addObserver(appLifecycleObserver)
-
-        //iotRecDatabase = IotRecDatabase.getDatabase(this, applicationScope)
-        //val intent = Intent(this, MainActivity::class.java)
-        //val bundle = Bundle()
-        //bundle.putParcelable("DATABASE", iotRecDatabase)
-        //intent.putExtra("DATABASE", iotRecDatabase)
-        //this.startActivity(intent)
-
-        // start bluetooth scanner service
-        //startService(Intent(this, BluetoothScannerService()::class.java))
-        //ContextCompat.startForegroundService(this, Intent(this, BluetoothScannerService()::class.java))
-
-
         // set up beacon manager
         beaconManager = BeaconManager.getInstanceForApplication(this)
 
-        // iBeacon
+        // iBeacon layout
         beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
-
+        // Eddystone UID layout
         beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT))
+        // other possible layout types
         //beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_TLM_LAYOUT))
         //beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_URL_LAYOUT))
         //beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(BeaconParser.URI_BEACON_LAYOUT))
         //beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(BeaconParser.ALTBEACON_LAYOUT))
 
+        // debugging prints verbose scanning information
         BeaconManager.setDebug(false)
 
         // notification for foreground service
@@ -196,12 +169,14 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
         builder.setContentTitle("Scanning for Beacons")
         builder.setGroup("IOTREC_PERSISTENT_GROUP")
 
+        // notification's intent points to MainActivity
         val intent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
         )
-
         builder.setContentIntent(pendingIntent)
+
+        // notification channel is needed from Android O on
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 "IotRec Persistent Notification Channel ID",
@@ -219,27 +194,13 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
         // set up scan
         beaconManager.enableForegroundServiceScanning(notification, 456)
         beaconManager.setEnableScheduledScanJobs(false)
-        //beaconManager.foregroundBetweenScanPeriod = 0
         beaconManager.foregroundBetweenScanPeriod = 0
-        //beaconManager.foregroundScanPeriod = 1100
         beaconManager.foregroundScanPeriod = 1500
-        //beaconManager.backgroundBetweenScanPeriod = 5000
         beaconManager.backgroundBetweenScanPeriod = 0
-        //beaconManager.backgroundScanPeriod = 1100
         beaconManager.backgroundScanPeriod = 1500
 
-        //beaconManager.disableForegroundServiceScanning()
-
+        // beacon library mandates mere presence of this object to enable some power saving features
         val backgroundPowerSaver = BackgroundPowerSaver(this)
-
-
-        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        //    val scanFilterBuilder = ScanFilter.Builder()
-        //    scanFilterBuilder.setManufacturerData(0x004c, byteArrayOf())
-        //    val scanFilter = scanFilterBuilder.build()
-        //}
-
-
     }
 
     fun startBluetoothScanning() {
@@ -248,28 +209,16 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
 
 
     override fun onBeaconServiceConnect() {
+        // remove any existing range notifiers
         beaconManager.removeAllRangeNotifiers()
 
+        // create a new range notifier
         beaconManager.addRangeNotifier(object : RangeNotifier {
             override fun didRangeBeaconsInRegion(beacons: Collection<Beacon>, region: Region) {
-                //Log.d(TAG,"=================================================================")
-
+                // empty thing to hold things in range, will be populated below
                 val rangedBeacons: MutableList<Thing> = mutableListOf()
 
-                // debugging code
-                /*
-                if(Date().time - lastLogPrint.time > 2 * 60 * 1000) {
-                    lastLogPrint = Date()
-
-                    beaconStats.forEach { (thingId, logTimes) ->
-                        if(beaconStats.containsKey(thingId)) {
-                            var avgTime = (beaconStats[thingId]!!.sumByDouble{ it.toDouble() })/beaconStats[thingId]!!.size
-                            Log.d(TAG, "beacon stats:   ${thingId}          ${String.format("%.2f", avgTime)}  (${beaconStats[thingId]!!.size})")
-                        }
-                    }
-                }
-                */
-
+                // loop through all beacons
                 for (beacon in beacons) {
                     // filter out some of the test beacons
                     if(
@@ -281,26 +230,24 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
                         // create object for newly discovered thing
                         var beaconType = ""
                         var beaconId = ""
-                        var beaconIdNew = ""
                         var iBeaconUuid = ""
                         var iBeaconMajor = 0
                         var iBeaconMinor = 0
                         var eddystoneNamespaceId = ""
                         var eddystoneInstanceId = ""
 
-                        //check if there is an active experiment and if yes, modify the thing's ID
+                        //check if there is an active experiment and if yes, modify the thing's ID (attach scenario ID)
                         var scenarioForId = ""
                         val experimentCurrentRun = sharedPrefs.getInt("experimentCurrentRun", 0)
                         val experimentCurrentScenario = sharedPrefs.getString("experimentCurrentScenario", "")
-
                         if(experimentCurrentRun > 0 && experimentCurrentScenario != "") {
                             scenarioForId = "-$experimentCurrentScenario"
                         }
 
+                        // find out type of beacon, typecode 215 is iBeacon
                         if (beacon.beaconTypeCode.toString(16) == "215") {
                             beaconType = "BCN_I"
-                            beaconId =
-                                beacon.id1.toString() + "-" + beacon.id2.toString() + "-" + beacon.id3.toString() + scenarioForId
+                            beaconId = beacon.id1.toString() + "-" + beacon.id2.toString() + "-" + beacon.id3.toString() + scenarioForId
                             iBeaconUuid = beacon.id1.toString()
                             iBeaconMajor = beacon.id2.toInt()
                             iBeaconMinor = beacon.id3.toInt()
@@ -311,6 +258,7 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
                             eddystoneInstanceId = beacon.id2.toString()
                         }
 
+                        // create a bare thing object from the bluetooth data
                         val thing = Thing(
                             beaconId,
                             beaconType,
@@ -339,27 +287,18 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
                             false
                         )
 
+                        // add to list initialized above
                         rangedBeacons.add(thing)
 
                         // insert object into database
                         GlobalScope.launch(Dispatchers.IO) {
-
+                            // try to get existing db entry
                             val thingInDatabase = thingRepository.getThing(thing.id)
-
                             val thingExistsInDatabase = thingInDatabase != null
 
+                            // if the thing exists, update some properties
                             if (thingExistsInDatabase) {
-                                //Log.d(TAG, "Found existing thing")
-
-                                // debugging code
-                                /*
-                                if(beaconStats.containsKey(thing.id)) {
-                                    beaconStats[thing.id]!!.add((Date().time - thingInDatabase.lastSeen!!.time)/1000.toDouble())
-                                } else {
-                                    beaconStats[thing.id] = mutableListOf((Date().time - thingInDatabase.lastSeen!!.time)/1000.toDouble())
-                                }
-                                */
-
+                                /* DEBUGGING LOGS
                                 val thingWasSeenGTE30SecondsAgo = (thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000 >= 30
                                 val thingWasSeenLT90SecondsAgo = (thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000 < 90
                                 val thingWasSeenGTE90SecondsAgo = (thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000 >= 90
@@ -369,10 +308,11 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
                                 } else if(thingWasSeenGTE90SecondsAgo) {
                                     Log.d(TAG, "Found inactive thing in database, last seen " + ((thing.lastSeen!!.time - thingInDatabase.lastSeen!!.time)/1000).toString() + " seconds ago: " + thing.id.toString())
                                 }
+                                */
+
                                 //if beacon is known already, just update inRange status and connectivity details
                                 thingRepository.updateBluetoothData(thing)
                             } else {
-                                //Log.d(TAG, "Found new thing: " + thing.id.toString())
                                 //if beacon is new, insert entire object
                                 thingRepository.insert(thing)
                             }
@@ -394,9 +334,7 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
                                )
                             ) {
                                 try {
-
-                                    //Log.d(TAG, "getting thing ${thing.id}")
-
+                                    // get thing information from API
                                     val result = iotRecApi.getThing(thing.id)
 
                                     // if successful, update database object
@@ -446,7 +384,7 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
 
                                         Log.d(TAG, thingRepository.getThing(thing.id).toString())
                                     } else {
-                                        // only update "lastTriedToQuery"
+                                        // if not successful,  only update "lastTriedToQuery"
                                         thingRepository.updateBackendData(
                                             thingInDatabase.id,
                                             thingInDatabase.title,
@@ -464,31 +402,21 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
                                             thingInDatabase.occupation
                                         )
                                     }
-                                    //} catch(e: SocketTimeoutException) {
-                                    //    Log.d(TAG, e.toString())
-                                    //} catch(e: ConnectException) {
-                                    //    // show snackbar to notify of failed connection
-                                    //    sendBroadcast(R.string.network_failed.toString())
                                 } catch (e: Throwable) {
                                     Log.d(TAG, e.toString())
-                                    //sendBroadcast(e.toString())
                                 }
                             }
                         }
 
-                        // check if item is to be recommended
-                        //ContextCompat.startForegroundService(applicationContext, Intent(applicationContext, RecommendationCheckerService()::class.java))
-                        //startService(Intent(applicationContext, RecommendationCheckerService()::class.java))
-
-                        val recommendationCheckerServiceIntent =
-                            Intent(applicationContext, RecommendationCheckerService()::class.java)
+                        // start service to check if item is to be recommended
+                        val recommendationCheckerServiceIntent = Intent(applicationContext, RecommendationCheckerService()::class.java)
                         recommendationCheckerServiceIntent.putExtra("thingId", thing.id)
                         startService(recommendationCheckerServiceIntent)
                     }
                 }
 
+                // clean beacon list of things that weren't in range for a while
                 GlobalScope.launch(Dispatchers.IO) {
-
                     // get all thing with status "inRange=true" in database
                     val databaseThingsInRange = thingRepository.getThingsInRangeList()
 
@@ -500,10 +428,7 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
 
                     // set inRange to false for those identified
                     for (thing in thingsNotInRangeAnymore) {
-                        Log.d(TAG, "thing not in range anymore: " + thing.id)
-
                         thing.inRange = false
-
                         GlobalScope.launch(Dispatchers.IO) {
                             thingRepository.setThingInRange(thing.id, false)
                         }
@@ -514,6 +439,7 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
             }
         })
 
+        // define a region (needed by altbeacon framework) and then start actual scan
         val region = Region("backgroundRegion", null, null, null)
         beaconManager.startRangingBeaconsInRegion(region)
     }
@@ -538,247 +464,3 @@ class IotRecApplication : Application(), BeaconConsumer, LocationListener {
 
     }
 }
-
-
-/*
-class IotRecApplication : Application(), BootstrapNotifier/*, BeaconConsumer, RangeNotifier*/ {
-
-    private val TAG = "IotRecApplication"
-    private var regionBootstrap: RegionBootstrap? = null
-    private var backgroundPowerSaver: BackgroundPowerSaver? = null
-    //private var haveDetectedBeaconsSinceBoot = false
-    private var rangingActivity: MainActivity? = null
-    var beaconManager: BeaconManager? = null
-
-    // Called when the application is starting, before any other application objects have been created.
-    // Overriding this method is totally optional!
-    override fun onCreate() {
-        super.onCreate()
-
-        Log.d(TAG, "App started up")
-
-        beaconManager = BeaconManager.getInstanceForApplication(this)
-        beaconManager.setDebug(true)
-        beaconManager!!.beaconParsers.add(BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
-
-
-        //val region = Region("backgroundRegion", null, null, null)
-        //regionBootstrap = RegionBootstrap(this, region)
-
-
-
-        /*
-        backgroundPowerSaver = BackgroundPowerSaver(this)
-
-        beaconManager!!.backgroundBetweenScanPeriod = 30000L
-        beaconManager!!.foregroundBetweenScanPeriod = 2000L
-        beaconManager!!.bind(this)
-        */
-
-        //val beaconManager = BeaconManager.getInstanceForApplication(this)
-
-        //beaconManager.foregroundScanPeriod = 1100
-        //beaconManager.foregroundBetweenScanPeriod = 0
-        //beaconManager.backgroundScanPeriod = 1100
-        //beaconManager.backgroundBetweenScanPeriod = 0
-
-        // set iBeacon layout
-        //beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
-
-
-        val builder = Notification.Builder(this)
-        builder.setSmallIcon(R.mipmap.ic_launcher)
-        val contentTitle = builder.setContentTitle("Scanning for Beacons")
-        val intent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        builder.setContentIntent(pendingIntent)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "My Notification Channel ID",
-                "My Notification Name", NotificationManager.IMPORTANCE_DEFAULT
-            )
-            channel.description = "My Notification Channel Description"
-            val notificationManager = getSystemService(
-                Context.NOTIFICATION_SERVICE
-            ) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-            builder.setChannelId(channel.id)
-        }
-
-        beaconManager!!.enableForegroundServiceScanning(builder.build(), 456)
-
-        // For the above foreground scanning service to be useful, you need to disable
-        // JobScheduler-based scans (used on Android 8+) and set a fast background scan
-        // cycle that would otherwise be disallowed by the operating system.
-        //
-        beaconManager!!.setEnableScheduledScanJobs(false)
-        beaconManager!!.backgroundBetweenScanPeriod = 0
-        beaconManager!!.backgroundScanPeriod = 1000L
-        beaconManager!!.foregroundBetweenScanPeriod = 0
-        beaconManager!!.foregroundScanPeriod = 1000L
-
-        //LogManager.setLogger(Loggers.verboseLogger())
-        //LogManager.setVerboseLoggingEnabled(true)
-
-        Log.d(TAG, "setting up background monitoring for beacons and power saving");
-
-        // wake up the app when a beacon is seen
-        val region = Region("backgroundRegion", null, null, null)
-        regionBootstrap = RegionBootstrap(this, region)
-
-        // simply constructing this class and holding a reference to it in your custom Application
-        // class will automatically cause the BeaconLibrary to save battery whenever the application
-        // is not visible.  This reduces bluetooth power usage by about 60%
-        backgroundPowerSaver = BackgroundPowerSaver(this);
-    }
-
-        // Called by the system when the device configuration changes while your component is running.
-    // Overriding this method is totally optional!
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-    }
-
-    // This is called when the overall system is running low on memory,
-    // and would like actively running processes to tighten their belts.
-    // Overriding this method is totally optional!
-    override fun onLowMemory() {
-        super.onLowMemory()
-    }
-
-    override fun didDetermineStateForRegion(p0: Int, p1: Region?) {
-        Log.d(TAG, "Current region state is: " + if (p0 === 1) "INSIDE" else "OUTSIDE ($p0)")
-    }
-
-    override fun didEnterRegion(p0: Region) {
-
-        /*
-        // In this example, this class sends a notification to the user whenever a Beacon
-        // matching a Region (defined above) are first seen.
-        Log.d(TAG, "did enter region.")
-        if (!haveDetectedBeaconsSinceBoot) {
-            Log.d(TAG, "auto launching MainActivity")
-
-            // The very first time since boot that we detect an beacon, we launch the
-            // MainActivity
-            val intent = Intent(this, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            // Important:  make sure to add android:launchMode="singleInstance" in the manifest
-            // to keep multiple copies of this activity from getting created if the user has
-            // already manually launched the app.
-            this.startActivity(intent)
-            haveDetectedBeaconsSinceBoot = true
-        } else {
-            if (monitoringActivity != null) {
-                // If the Monitoring Activity is visible, we log info about the beacons we have
-                // seen on its display
-                Log.d(TAG, "I see a beacon again")
-            } else {
-                // If we have already seen beacons before, but the monitoring activity is not in
-                // the foreground, we send a notification to the user on subsequent detections.
-                Log.d(TAG, "Sending notification.")
-                sendNotification()
-            }
-        }
-        */
-
-        /*
-        Log.d(TAG, "did enter region.")
-        val intent = Intent(this, MainActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        this.startActivity(intent)
-        */
-
-        Log.d(TAG, "did enter region.")
-        try {
-            beaconManager?.startRangingBeaconsInRegion(p0)
-        } catch (e: RemoteException) {
-            if (BuildConfig.DEBUG) Log.d(TAG, "Can't start ranging")
-        }
-
-    }
-
-    override fun didExitRegion(p0: Region) {
-        Log.d(TAG, "I no longer see a beacon.")
-
-        try {
-            beaconManager?.stopRangingBeaconsInRegion(p0)
-        } catch (e: RemoteException) {
-            e.printStackTrace()
-        }
-
-    }
-
-    fun setRangingActivity(activity: MainActivity) {
-        this.rangingActivity = activity
-    }
-
-    fun disableMonitoring() {
-        if (regionBootstrap != null) {
-            regionBootstrap!!.disable()
-            regionBootstrap = null
-        }
-    }
-
-    fun enableMonitoring() {
-        val region = Region("backgroundRegion", null, null, null)
-        regionBootstrap = RegionBootstrap(this, region)
-    }
-
-
-    /*
-    private fun sendNotification(text: String) {
-        /*
-        val builder = NotificationCompat.Builder(this)
-            .setContentTitle("Beacon Reference Application")
-            .setContentText("An beacon is nearby.")
-            .setSmallIcon(R.mipmap.ic_launcher)
-
-        val stackBuilder = TaskStackBuilder.create(this)
-        stackBuilder.addNextIntent(Intent(this, MainActivity::class.java))
-        val resultPendingIntent = stackBuilder.getPendingIntent(
-            0,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        builder.setContentIntent(resultPendingIntent)
-        val notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(1, builder.build())
-        */
-
-        val builder = NotificationCompat.Builder(this)
-            .setContentTitle("Beacon Reference Application")
-            .setContentText(text)
-            .setSmallIcon(R.mipmap.ic_launcher)
-
-        val stackBuilder = TaskStackBuilder.create(this)
-        stackBuilder.addNextIntent(Intent(this, MainActivity::class.java))
-        val resultPendingIntent = stackBuilder.getPendingIntent(
-            0,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        builder.setContentIntent(resultPendingIntent)
-        val notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(1, builder.build())
-    }
-
-    override fun onBeaconServiceConnect() {
-        beaconManager?.setRangeNotifier(this)
-    }
-
-    override fun didRangeBeaconsInRegion(beacons: MutableCollection<Beacon>?, p1: Region?) {
-        if (beacons != null) {
-            if (beacons.size > 0) {
-                for (b in beacons) {
-                    if (b.id2.toString() == "0x6d767674636e") {
-                        Log.e(TAG, "Beacon with my Instance ID found!")
-                        sendNotification("Beacon with my Instance ID found!")
-                    }
-                }
-            }
-        }
-    }
-    */
-}
-*/
